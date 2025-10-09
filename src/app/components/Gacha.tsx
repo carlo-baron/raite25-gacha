@@ -11,7 +11,9 @@ import {
 } from '@mui/material';
 import { 
   TIERS,
-  fetchPokemonData
+  fetchPokemonData,
+  Rarity,
+  PokemonType,
 } from '@/utils';
 
 const cumulative = (function buildCumulative() {
@@ -30,7 +32,7 @@ function weightedPickTier(rand = Math.random()) {
   return cumulative[cumulative.length - 1];
 }
 
-function getRarityMultiplier(rarity) {
+function getRarityMultiplier(rarity: Rarity) {
   switch (rarity) {
     case "EX": return 10;
     case "Ultra-Rare": return 5;
@@ -41,10 +43,10 @@ function getRarityMultiplier(rarity) {
 }
 
 interface GachaProps{
-  onPull: (monster) => void;
+  onPull: (monster: PokemonType) => void;
   walletBalance: number;
-  spendTokens: () => boolean;
-  refundTokens: () => void;
+  spendTokens: (cost: number, message: string) => boolean;
+  refundTokens: (cost: number, message: string) => void;
   pullCost: number;
 }
 
@@ -57,7 +59,7 @@ export default function Gacha({
 }: GachaProps){
   const [selected, setSelected] = useState<string | null>('ex');
   const [isPulling, setIsPulling] = useState<boolean>(false);
-  const [pulledMon, setPulledMon] = useState(null);
+  const [pulledMon, setPulledMon] = useState<PokemonType | null>(null);
   const [message, setMessage] = useState<string>('');
 
   async function pull(){
@@ -78,7 +80,10 @@ export default function Gacha({
 
     try {
       const poke = await fetchPokemonData(pick);
-      const sumStats = Object.values(poke.stats).reduce((a,b) => a + b, 0);
+      const sumStats = (Object.values(poke.stats) as number[]).reduce(
+        (a,b) => a + b,
+          0
+      );
       const multiplier = getRarityMultiplier(tier.name);
       const cryptoWorth = Math.max(1, Math.round((sumStats / 10) * multiplier));
 
@@ -101,7 +106,7 @@ export default function Gacha({
 
       onPull(monster);
       setPulledMon(monster);
-      setMessage(`Pulled ${monster.name.toUpperCase()} — ${monster.rarity} (spent ${pullCost} tokens)`);
+      setMessage(`Pulled ${monster.name.toUpperCase()}`);
       setSelected(monster.rarity.toLowerCase())
     } catch (err) {
       console.error("Gacha pull failed", err);
@@ -110,7 +115,6 @@ export default function Gacha({
     } finally {
       setTimeout(() => setIsPulling(false), 600);
     }
-
   }
 
   return(
@@ -185,12 +189,12 @@ const rarityBadges = [
   {text: 'Rare', color: '#f87316'},
   {text: 'Ultra-Rare', color: '#ec4899'},
   {text: 'EX', color: '#ef4444'},
-];
+] as const;
 
 export  function BadgeSelector({selected=null}:{selected?: string | null;}) {
 
   return (
-    <Box className="flex gap-2">
+    <Box className="flex flex-wrap gap-2">
       {rarityBadges.map((badge) => (
         <Chip
           key={badge.text}

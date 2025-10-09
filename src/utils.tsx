@@ -51,34 +51,87 @@ export const TIERS = [
       "treecko","grovyle","sceptile","torchic","combusken","blaziken","mudkip","marshtomp","swampert","breloom"
     ],
   },
-];
+] as const;
 
-export async function fetchPokemonData(nameOrId: string | number){
-  try {
-    const name = String(nameOrId).toLowerCase();
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-    if (!res.ok) throw new Error("Pokemon not found");
-    const data = await res.json();
+// --- Type Definitions ---
 
-    const stats = {};
-    data.stats.forEach((s) => {
-      stats[s.stat.name] = s.base_stat;
-    });
+export type PokemonStat = {
+  base_stat: number;
+  effort: number;
+  stat: {
+    name: string;
+    url: string;
+  };
+};
 
-    const types = data.types.map(t => t.type.name);
+export type PokemonTypeSlot = {
+  slot: number;
+  type: {
+    name: string;
+    url: string;
+  };
+};
 
-    return {
-      id: data.id,
-      name: data.name,
-      sprite: data.sprites?.other?.["official-artwork"]?.front_default || data.sprites.front_default,
-      stats,
-      types,
-      cry: data.cries.latest,
+export interface RawPokemonResponse {
+  id: number;
+  name: string;
+  cries: { latest: string };
+  sprites: {
+    front_default: string;
+    other?: {
+      ['official-artwork']: { front_default: string };
     };
-  } catch (err) {
-    console.error("fetchPokemonData error:", err);
-    throw err;
-  }
+  };
+  stats: PokemonStat[];
+  types: PokemonTypeSlot[];
 }
 
-export const PULL_COST = 55;
+// --- Fetch Function ---
+
+export async function fetchPokemonData(nameOrId: string | number) {
+  const name = String(nameOrId).toLowerCase();
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+
+  if (!res.ok) throw new Error("Pokemon not found");
+
+  const data: RawPokemonResponse = await res.json();
+
+  const stats = Object.fromEntries(
+    data.stats.map(s => [s.stat.name, s.base_stat])
+  );
+
+  const types = data.types.map(t => t.type.name);
+
+  return {
+    id: data.id,
+    name: data.name,
+    sprite:
+      data.sprites.other?.["official-artwork"]?.front_default ??
+      data.sprites.front_default,
+    stats,
+    types,
+    cry: data.cries.latest,
+  };
+}
+
+// --- Game Logic Types ---
+
+export const PULL_COST = 55 as const;
+
+export type Rarity = 'Common' | 'Uncommon' | 'Rare' | 'Ultra-Rare' | 'EX';
+
+export interface PokemonType {
+  uid: string;
+  acquiredAt: number;
+  name: string;
+  speciesId: number;
+  sprite: string;
+  types: string[];
+  cry: string;
+  baseStats: Record<string, number>;
+  stats: Record<string, number>;
+  rarity: Rarity;
+  cryptoWorth: number;
+  history: { ts: number; event: string; deltaWorth: number }[];
+}
+

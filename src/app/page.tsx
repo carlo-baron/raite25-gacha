@@ -17,18 +17,31 @@ import {
 } from 'react';
 import Gacha from './components/Gacha';
 import {
-  PULL_COST
+  PULL_COST,
+  PokemonType,
 } from '@/utils';
 
-export default function Home() {
-  const [monsters, setMonsters] = useState([]);
-  const [wallet, setWallet] = useState({ balance: 5000, history: [] });
+interface WalletHistory {
+  ts: number;
+  type: "credit" | "debit";
+  amount: number;
+  note: string;
+}
 
-  function addMonster(monster) {
+interface Wallet {
+  balance: number;
+  history: WalletHistory[];
+}
+
+export default function Home() {
+  const [monsters, setMonsters] = useState<PokemonType[]>([]);
+  const [wallet, setWallet] = useState<Wallet>({ balance: 5000, history: [] });
+
+  function addMonster(monster: PokemonType) {
     setMonsters(prev => [monster, ...prev]);
   }
 
-  function spendTokens(amount, note = "") {
+  function spendTokens(amount: number, note = "") {
     if (amount <= 0) return true;
     if (wallet.balance >= amount) {
       setWallet((prev) => {
@@ -42,7 +55,7 @@ export default function Home() {
     }
   }
 
-  function creditTokens(amount, note = "") {
+  function creditTokens(amount: number, note = "") {
     if (amount <= 0) return;
     setWallet((prev) => {
       const next = { ...prev, balance: prev.balance + amount };
