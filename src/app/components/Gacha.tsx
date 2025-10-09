@@ -9,7 +9,10 @@ import {
   Paper,
   Button
 } from '@mui/material';
-import { TIERS } from '@/utils';
+import { 
+  TIERS,
+  fetchPokemonData
+} from '@/utils';
 
 const cumulative = (function buildCumulative() {
   const total = TIERS.reduce((s, t) => s + t.weight, 0);
@@ -38,8 +41,9 @@ function getRarityMultiplier(rarity) {
 }
 
 interface GachaProps{
-  onPull: () => void;
+  onPull: (monster) => void;
   walletBalance: number;
+  spendTokens: () => boolean;
   refundTokens: () => void;
   pullCost: number;
 }
@@ -47,15 +51,66 @@ interface GachaProps{
 export default function Gacha({
   onPull,
   walletBalance = 0,
+  spendTokens = () => false,
   refundTokens,
   pullCost = 55
 }: GachaProps){
   const [selected, setSelected] = useState<string | null>('ex');
   const [isPulling, setIsPulling] = useState<boolean>(false);
+  const [pulledMon, setPulledMon] = useState(null);
+  const [message, setMessage] = useState<string>('');
 
-  function pull(){
+  async function pull(){
     if(isPulling) return;
     setIsPulling(true);
+
+    const canSpend = spendTokens(pullCost, `Gacha pull (${pullCost})`);
+    if (!canSpend) {
+      setMessage("Insufficient tokens — top up to pull.");
+      setIsPulling(false);
+      return;
+    }
+
+    const random = Math.random();
+    const tier = weightedPickTier(random);
+    const list = tier.pokemon;
+    const pick = list[Math.floor(Math.random() * list.length)];
+
+    try {
+      const poke = await fetchPokemonData(pick);
+      const sumStats = Object.values(poke.stats).reduce((a,b) => a + b, 0);
+      const multiplier = getRarityMultiplier(tier.name);
+      const cryptoWorth = Math.max(1, Math.round((sumStats / 10) * multiplier));
+
+      const monster = {
+        uid: Date.now() + "-" + Math.floor(Math.random()*10000),
+        acquiredAt: Date.now(),
+        name: poke.name,
+        speciesId: poke.id,
+        sprite: poke.sprite,
+        types: poke.types,
+        cry: poke.cry,
+        baseStats: poke.stats,
+        stats: { ...poke.stats },
+        rarity: tier.name,
+        cryptoWorth,
+        history: [
+          { ts: Date.now(), event: `Pulled (${tier.name})`, deltaWorth: 0 }
+        ]
+      };
+
+      onPull(monster);
+      setPulledMon(monster);
+      setMessage(`Pulled ${monster.name.toUpperCase()} — ${monster.rarity} (spent ${pullCost} tokens)`);
+      setSelected(monster.rarity.toLowerCase())
+    } catch (err) {
+      console.error("Gacha pull failed", err);
+      setMessage("Pull failed — refunding tokens.");
+      refundTokens(pullCost, "Refund failed pull");
+    } finally {
+      setTimeout(() => setIsPulling(false), 600);
+    }
+
   }
 
   return(
@@ -79,7 +134,7 @@ export default function Gacha({
             fontWeight={600}
             className='self-center'
             >
-              Ξ1,000
+              Ξ{walletBalance.toLocaleString()}
             </Typography>
           </Box>
           <Box 
@@ -102,15 +157,21 @@ export default function Gacha({
           <Box 
           className="pulled flex flex-col"
           >
-            <img 
-            className='w-[256px]'
-            src='/infernape.png'
-            alt=""
-            />
+          {
+            pulledMon && (
+              <img 
+              className='w-[256px] self-center'
+              src={pulledMon.sprite}
+              alt=""
+              />
+            )
+          }
             <Typography
             className='self-center'
             >
-            Pulled Infernape
+              {
+                message 
+              }
             </Typography>
           </Box>
         </Box>

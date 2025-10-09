@@ -52,3 +52,33 @@ export const TIERS = [
     ],
   },
 ];
+
+export async function fetchPokemonData(nameOrId: string | number){
+  try {
+    const name = String(nameOrId).toLowerCase();
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+    if (!res.ok) throw new Error("Pokemon not found");
+    const data = await res.json();
+
+    const stats = {};
+    data.stats.forEach((s) => {
+      stats[s.stat.name] = s.base_stat;
+    });
+
+    const types = data.types.map(t => t.type.name);
+
+    return {
+      id: data.id,
+      name: data.name,
+      sprite: data.sprites?.other?.["official-artwork"]?.front_default || data.sprites.front_default,
+      stats,
+      types,
+      cry: data.cries.latest,
+    };
+  } catch (err) {
+    console.error("fetchPokemonData error:", err);
+    throw err;
+  }
+}
+
+export const PULL_COST = 55;
