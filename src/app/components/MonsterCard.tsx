@@ -11,9 +11,14 @@ import{
   CardContent,
   Chip,
 } from '@mui/material';
-import { PokemonType } from '@/utils';
+import { PokemonType, rarityBadges } from '@/utils';
+import {
+  useState
+} from 'react';
 
 export default function MonsterCard({id, monster}: {id: string; monster: PokemonType;}){
+  const [hovered, setHovered] = useState<boolean>(false);
+
   const mappedTypes = monster.types.map((type, index) => {
     return (
       <Chip 
@@ -29,38 +34,43 @@ export default function MonsterCard({id, monster}: {id: string; monster: Pokemon
     );
   });
 
+  const rarityColor = rarityBadges.find(rarity => rarity.text == monster.rarity);
+
   return(
     <Paper
     id={id}
+    component={motion.div}
+    onHoverStart={() => setHovered(true)}
+    onHoverEnd={() => setHovered(false)}
+    whileHover={{
+      y: -5
+    }}
     >
-      <Card
-      component={motion.div}
-      whileHover={{
-        y: -5
-      }}
-      >
+      <Card>
         <CardActionArea>
           <CardContent
           className='justify-center items-center flex flex-col'
           >
-            <CardMedia
-            component='img'
-            image={monster.sprite}
-            alt={monster.name}
-            className='relative self-center'
-            sx={{
-              width: '60%',
-              height: 'fit-content',
-              objectFit: 'cover',
-            }}
+            <motion.img 
+            className='self-center w-[60%] h-fit object-cover'
+            src={monster.sprite}
+            alt={monster.name} 
+            animate={
+              hovered ? {scale: 1.1, y: -50} : {}
+            }
             />
             <Chip 
+            component={motion.div}
+            animate={
+              hovered ? {scale: 1.1} : {}
+            }
             className='absolute left-4 top-4 capitalize'
             label={monster.rarity}
             size='small'
             sx={{
-              fontSize: '10px',
+              fontSize: '12px',
               fontWeight: 800,
+              background: rarityColor?.color == '#fff' ? '' : rarityColor.color,
             }}
             />
           </CardContent>

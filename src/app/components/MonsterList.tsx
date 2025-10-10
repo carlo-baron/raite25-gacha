@@ -12,6 +12,7 @@ import{
 } from '@/utils';
 import{
   useState,
+  useEffect,
 } from 'react';
 import MonsterCard from './MonsterCard';
 
@@ -23,6 +24,7 @@ export default function MonsterList({
   monsters,
 }:MonsterListProps){
   const [filtered, setFiltered] = useState<PokemonType[]>(monsters);
+  useEffect(() => setFiltered(monsters), [monsters]);
 
   function handleSearchChange(event: React.SyntheticEvent, newValue: PokemonType | null){
     if(newValue){
@@ -34,7 +36,7 @@ export default function MonsterList({
 
   const mappedMons = filtered.map((monster) => {
     return(
-        <MonsterCard id={monster.name} key={monster.uid}
+        <MonsterCard id={monster.uid} key={monster.uid}
         monster={monster}
         />
     );
@@ -73,7 +75,7 @@ export default function MonsterList({
             const { key, ...rest } = props;
             return(
               <li 
-              key={key}
+              key={option.uid}
               {...rest}
               className='p-2 capitalize'
               >
@@ -99,7 +101,7 @@ export default function MonsterList({
         }}
         >
           {
-            monsters.length > 0 ? 
+            filtered.length > 0 ? 
               mappedMons
             :
               (

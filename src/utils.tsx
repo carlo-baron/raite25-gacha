@@ -119,6 +119,13 @@ export async function fetchPokemonData(nameOrId: string | number) {
 export const PULL_COST = 55 as const;
 
 export type Rarity = 'Common' | 'Uncommon' | 'Rare' | 'Ultra-Rare' | 'EX';
+export const rarityBadges = [
+  {text: 'Common', color: '#fff'},
+  {text: 'Uncommon', color: '#22c55e'},
+  {text: 'Rare', color: '#f87316'},
+  {text: 'Ultra-Rare', color: '#ec4899'},
+  {text: 'EX', color: '#ef4444'},
+] as const;
 
 export interface PokemonType {
   uid: string;

@@ -14,6 +14,7 @@ import {
   fetchPokemonData,
   Rarity,
   PokemonType,
+  rarityBadges,
 } from '@/utils';
 
 const cumulative = (function buildCumulative() {
@@ -183,14 +184,6 @@ export default function Gacha({
       </Paper>
   );
 }
-
-const rarityBadges = [
-  {text: 'Common', color: '#fff'},
-  {text: 'Uncommon', color: '#22c55e'},
-  {text: 'Rare', color: '#f87316'},
-  {text: 'Ultra-Rare', color: '#ec4899'},
-  {text: 'EX', color: '#ef4444'},
-] as const;
 
 export  function BadgeSelector({selected=null}:{selected?: string | null;}) {
 
