@@ -16,7 +16,7 @@ import {
   useState
 } from 'react';
 
-export default function MonsterCard({id, monster}: {id: string; monster: PokemonType;}){
+export default function MonsterCard({id, monster, onClick}: {id: string; monster: PokemonType; onClick: (monster: PokemonType) => void}){
   const [hovered, setHovered] = useState<boolean>(false);
 
   const mappedTypes = monster.types.map((type, index) => {
@@ -45,6 +45,7 @@ export default function MonsterCard({id, monster}: {id: string; monster: Pokemon
     whileHover={{
       y: -5
     }}
+    onClick={() => onClick(monster)}
     >
       <Card>
         <CardActionArea>

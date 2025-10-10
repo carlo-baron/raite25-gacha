@@ -15,6 +15,7 @@ import{
   useEffect,
 } from 'react';
 import MonsterCard from './MonsterCard';
+import MonsterModal from './MonsterModal';
 
 interface MonsterListProps{
   monsters: PokemonType[]
@@ -24,6 +25,7 @@ export default function MonsterList({
   monsters,
 }:MonsterListProps){
   const [filtered, setFiltered] = useState<PokemonType[]>(monsters);
+  const [selected, setSelected] = useState<PokemonType | null>(null);
   useEffect(() => setFiltered(monsters), [monsters]);
 
   function handleSearchChange(event: React.SyntheticEvent, newValue: PokemonType | null){
@@ -36,8 +38,11 @@ export default function MonsterList({
 
   const mappedMons = filtered.map((monster) => {
     return(
-        <MonsterCard id={monster.uid} key={monster.uid}
+        <MonsterCard 
+        id={monster.uid}
+        key={monster.uid}
         monster={monster}
+        onClick={monster => setSelected(monster)}
         />
     );
   });
@@ -113,6 +118,16 @@ export default function MonsterList({
               )
           }
         </Box>
+        {
+          selected && (
+            <MonsterModal 
+            monster={selected}
+            open={selected !== null}
+            onClose={() => setSelected(null)}
+            />
+          )
+        }
       </Paper>
   );
 }
+
