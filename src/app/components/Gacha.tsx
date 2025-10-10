@@ -130,12 +130,13 @@ export default function Gacha({
           >
             <Typography
             variant='h6'
+            fontWeight={600}
             >
               Wallet Balance: 
             </Typography>
             <Typography
             variant='h4'
-            fontWeight={600}
+            fontWeight={700}
             className='self-center'
             >
               Ξ{walletBalance.toLocaleString()}

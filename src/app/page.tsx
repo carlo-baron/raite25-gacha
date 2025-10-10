@@ -15,11 +15,12 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import Gacha from './components/Gacha';
 import {
   PULL_COST,
   PokemonType,
 } from '@/utils';
+import Gacha from './components/Gacha';
+import MonsterList from './components/MonsterList';
 
 interface WalletHistory {
   ts: number;
@@ -66,18 +67,19 @@ export default function Home() {
 
   return (
     <Container
-    className='p-4 flex flex-col'
+    className='gap-2 h-screen p-4 flex flex-col'
     disableGutters
     >
       <AppBar
-      className='rounded-md mb-4'
+      className='rounded-md'
       position='static'
       >
         <Toolbar
         className='flex justify-between'
         >
           <Typography
-          className='font-bold text-md'
+          variant='h6'
+          fontWeight={800}
           >
             GachaCare
           </Typography>
@@ -90,17 +92,24 @@ export default function Home() {
           </Button>
         </Toolbar>
       </AppBar>
-      <Gacha 
-      onPull={addMonster}
-      walletBalance={wallet.balance}
-      spendTokens={(amt, note) => {
-        return spendTokens(amt, note);
-      }}
-      refundTokens={(amt, note) => {
-        creditTokens(amt, note || "Refund");
-      }}
-      pullCost={PULL_COST}
-      />
+      <Box 
+      className="flex flex-col gap-2 main"
+      >
+        <Gacha 
+        onPull={addMonster}
+        walletBalance={wallet.balance}
+        spendTokens={(amt, note) => {
+          return spendTokens(amt, note);
+        }}
+        refundTokens={(amt, note) => {
+          creditTokens(amt, note || "Refund");
+        }}
+        pullCost={PULL_COST}
+        />
+        <MonsterList 
+        monsters={monsters}
+        />
+      </Box>
     </Container>
   );
 }
