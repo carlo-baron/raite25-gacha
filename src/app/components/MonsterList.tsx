@@ -22,14 +22,24 @@ interface MonsterListProps{
 export default function MonsterList({
   monsters,
 }:MonsterListProps){
+  const [filtered, setFiltered] = useState<PokemonType[]>(monsters);
 
-  const mappedMons = monsters.map((monster) => {
+  function handleSearchChange(event: React.SyntheticEvent, newValue: PokemonType | null){
+    if(newValue){
+      setFiltered([newValue]);
+    }else{
+      setFiltered(monsters);
+    }
+  }
+
+  const mappedMons = filtered.map((monster) => {
     return(
-        <MonsterCard key={monster.uid}
+        <MonsterCard id={monster.name} key={monster.uid}
         monster={monster}
         />
     );
   });
+
 
   return(
       <Paper
@@ -51,13 +61,10 @@ export default function MonsterList({
           </Typography>
         </Box>
         <Box
-        className='grow w-full flex flex-col p-4 gap-2'
-        sx={{
-          overflowY: 'auto',
-          maxHeight: '350px',
-        }}
+        className="px-2"
         >
           <Autocomplete 
+          className='sticky top-0'
           loading
           disablePortal
           options={monsters}
@@ -81,7 +88,16 @@ export default function MonsterList({
               );
             }
           }
+          onChange={handleSearchChange}
           />
+        </Box>
+        <Box
+        className='grow w-full flex flex-col px-4 py-2 gap-2'
+        sx={{
+          overflowY: 'auto',
+          maxHeight: '350px',
+        }}
+        >
           {
             monsters.length > 0 ? 
               mappedMons

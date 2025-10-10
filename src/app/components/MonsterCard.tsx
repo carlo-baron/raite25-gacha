@@ -13,7 +13,7 @@ import{
 } from '@mui/material';
 import { PokemonType } from '@/utils';
 
-export default function MonsterCard({monster}: {monster: PokemonType}){
+export default function MonsterCard({id, monster}: {id: string; monster: PokemonType;}){
   const mappedTypes = monster.types.map((type, index) => {
     return (
       <Chip 
@@ -31,6 +31,7 @@ export default function MonsterCard({monster}: {monster: PokemonType}){
 
   return(
     <Paper
+    id={id}
     >
       <Card
       component={motion.div}
