@@ -66,7 +66,7 @@ export default function MonsterList({
         className="px-2"
         >
           <Autocomplete 
-          className='sticky top-0'
+          className='md:hidden sticky top-0'
           loading
           disablePortal
           options={monsters}

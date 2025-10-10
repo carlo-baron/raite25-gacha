@@ -70,7 +70,7 @@ export default function MonsterCard({id, monster}: {id: string; monster: Pokemon
             sx={{
               fontSize: '12px',
               fontWeight: 800,
-              background: rarityColor?.color == '#fff' ? '' : rarityColor.color,
+              background: rarityColor?.color == '#fff' ? '' : rarityColor?.color,
             }}
             />
           </CardContent>
