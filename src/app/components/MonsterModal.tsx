@@ -105,10 +105,10 @@ export default function MonsterModal({
   const [local, setLocal] = useState<PokemonType>({...monster});
   const [lastActionMsg, setLastActionMsg] = useState<string | null>(null);
   const [isGeneratingOffer, setIsGeneratingOffer] = useState<boolean>(false);
-  const popupRef = useRef<HTMLDivElement | null>(null);
+  const popupRef = useRef<Window | null>(null);
 
   useEffect(() => {
-    function onMessage(e) {
+    function onMessage(e: MessageEvent) {
       try {
         if (e.origin !== window.location.origin) return;
       } catch (err) {
