@@ -54,7 +54,7 @@ const TIER_POOLS = {
 
 const NATO = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliett","Kilo","Lima","Mike","November","Oscar","Papa","Quebec","Romeo","Sierra","Tango","Uniform","Victor","Whiskey","Xray","Yankee","Zulu"];
 
-function applyResultToLocal(local: PokemonType, result: ShuffleResult) {
+function applyResultToLocal(local: PokemonType, result: ShuffleResult | TossResult) {
   const now = Date.now();
   const newStats = { ...local.stats };
   const delta = result.delta || 0;
