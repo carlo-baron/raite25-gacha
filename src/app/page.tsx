@@ -42,6 +42,24 @@ export default function Home() {
     setMonsters(prev => [monster, ...prev]);
   }
 
+  function updateMonster(updated: PokemonType) {
+    setMonsters((prev) => prev.map((m) => (m.uid === updated.uid ? updated : m)));
+  }
+
+  function removeMonsterByUid(uid: string) {
+    setMonsters((prev) => prev.filter((m) => m.uid !== uid));
+  }
+
+  function sellMonster(uid: string){
+    const monster = monsters.find(mon => mon.uid === uid);
+    if(!monster) return;
+
+    const worth = Math.max(0, Math.round(monster.cryptoWorth || 0));
+    removeMonsterByUid(uid);
+    creditTokens(worth, `Sold ${monster.name} (₿${worth})`);
+    return true;
+  }
+
   function spendTokens(amount: number, note = "") {
     if (amount <= 0) return true;
     if (wallet.balance >= amount) {
@@ -108,6 +126,11 @@ export default function Home() {
         />
         <MonsterList 
         monsters={monsters}
+        onUpdate={updateMonster}
+        onDelete={removeMonsterByUid}
+        onSell={(uid) => sellMonster(uid)}
+        addMonster={addMonster}
+        creditTokens={(amt, note) => creditTokens(amt, note)}
         />
       </Box>
     </Container>

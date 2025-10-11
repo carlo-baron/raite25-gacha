@@ -19,12 +19,7 @@ import {
 const cache = createCache({ key: 'css', prepend: true });
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode; }) {
-    const [isLight, setIsLight] = useState<boolean>(() =>{
-      if(typeof window !== 'undefined'){
-        return window.matchMedia("(prefers-color-scheme: light)").matches;
-      }
-      return false;
-    });
+    const [isLight] = useState<boolean>(false);
     const [mounted, setMounted] = useState<boolean>(false);
     const theme = createTheme({
       palette: {

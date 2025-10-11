@@ -17,17 +17,14 @@ import{
 import{
   PokemonType,
   maxBaseStats,
+  fetchPokemonData
 } from '@/utils';
 import ShuffleStatGame from './ShuffleStatGame';
 import {
   useState,
+  useEffect,
+  useRef,
 } from 'react';
-
-interface MonsterModalProps{
-  open: boolean;
-  onClose: () => void;
-  monster: PokemonType;
-}
 
 const TIER_POOLS = {
   "Common": [
@@ -84,18 +81,219 @@ interface ShuffleResult {
   source: string;
 }
 
+interface MonsterModalProps{
+  open: boolean;
+  onClose: () => void;
+  monster: PokemonType;
+  onDelete: (uid: string) => void;
+  onSave: (monster: PokemonType) => void;
+  onSell: (uid: string) => void;
+  addMonster: (monster: PokemonType) => void;
+  creditTokens: (amt: number, note: string) => void;
+}
+
 export default function MonsterModal({
   open,
   onClose,
   monster,
+  onDelete,
+  onSave,
+  onSell,
+  addMonster,
+  creditTokens
 }: MonsterModalProps){
   const [local, setLocal] = useState<PokemonType>({...monster});
   const [lastActionMsg, setLastActionMsg] = useState<string | null>(null);
+  const [isGeneratingOffer, setIsGeneratingOffer] = useState<boolean>(false);
+  const popupRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function onMessage(e) {
+      try {
+        if (e.origin !== window.location.origin) return;
+      } catch (err) {
+        // ignore origin check in some local setups
+      }
+      const data = e.data || {};
+      if (!data || !data.type) return;
+
+
+      if (data.type === "trade-accept") {
+        const offer = data.offer;
+        if (onDelete) onDelete(local.uid);
+        if (addMonster) addMonster(offer);
+        if (popupRef.current && !popupRef.current.closed) popupRef.current.close();
+        onClose();
+        window.alert(`Trade accepted — you received ${offer.name.toUpperCase()} from ${offer.__traderName}`);
+      } else if (data.type === "trade-decline") {
+        if (popupRef.current && !popupRef.current.closed) popupRef.current.close();
+        window.alert("Trade declined.");
+      }
+    }
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [local, onDelete, addMonster, onClose]);
 
   function handleMiniGameResult(result: ShuffleResult) {
     const updated = applyResultToLocal(local, result);
     setLocal(updated);
     setLastActionMsg(result.message);
+  }
+
+  function saveChanges() {
+    onSave(local);
+    onClose();
+  }
+
+  function handleSell() {
+    const confirm = window.confirm(`Sell ${local.name.toUpperCase()} for ₿${Math.round(local.cryptoWorth)}? This will remove the Pokémon from your collection.`);
+    if (!confirm) return;
+    if (onSell) {
+      onSell(local.uid);
+    } else {
+      if (onDelete) onDelete(local.uid);
+      if (creditTokens) creditTokens(Math.round(local.cryptoWorth), `Sold ${local.name}`);
+    }
+    onClose();
+  }
+
+  async function generateTradeOfferPopup() {
+    setIsGeneratingOffer(true);
+
+    const pool = TIER_POOLS[local.rarity] || [];
+    const options = pool.filter((s) => s.toLowerCase() !== local.name.toLowerCase());
+    const candidates = options.length > 0 ? options : pool.slice();
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+
+    try {
+      const poke = await fetchPokemonData(pick);
+      const sumStats = Object.values(poke.stats).reduce((a,b) => a + b, 0);
+      let multiplier = 1;
+      switch (local.rarity) {
+        case "EX": multiplier = 10; break;
+        case "Ultra-Rare": multiplier = 5; break;
+        case "Rare": multiplier = 2.5; break;
+        case "Uncommon": multiplier = 1.5; break;
+        default: multiplier = 1; break;
+      }
+      const cryptoWorth = Math.max(1, Math.round((sumStats / 10) * multiplier));
+
+      const phon = NATO[Math.floor(Math.random() * NATO.length)];
+      const idnum = Math.floor(Math.random() * 9000) + 100;
+      const traderName = `${phon}-${idnum}`;
+
+      const offered = {
+        uid: `offer-${Date.now()}-${Math.floor(Math.random()*10000)}`,
+        acquiredAt: Date.now(),
+        name: poke.name,
+        speciesId: poke.id,
+        sprite: poke.sprite,
+        types: poke.types,
+        baseStats: poke.stats,
+        stats: { ...poke.stats },
+        rarity: local.rarity,
+        cryptoWorth,
+        history: [{ ts: Date.now(), event: `Offered by ${traderName}`, deltaWorth: 0 }],
+        __traderName: traderName,
+      };
+
+      const w = 520;
+      const h = 720;
+      const left = Math.round((window.screen.width - w) / 2);
+      const top = Math.round((window.screen.height - h) / 2);
+      const features = `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`;
+      const popup = window.open("", `trade-offer-${Date.now()}`, features);
+
+      if (!popup) {
+        window.alert("Popup blocked. Please allow popups for this site to use Trade.");
+        setIsGeneratingOffer(false);
+        return;
+      }
+
+      popupRef.current = popup;
+
+      const escapedSprite = offered.sprite;
+      const html = `
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>Trade Offer — ${offered.name}</title>
+            <style>
+              body { margin:0; font-family: Inter, Arial, sans-serif; background: linear-gradient(180deg,#071026,#04101a); color:#eaf6ff; display:flex; flex-direction:column; align-items:center; padding:18px; }
+              .card { width: 440px; border-radius:12px; padding:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008)); box-shadow: 0 18px 40px rgba(0,0,0,0.6); margin-top:12px; }
+              img { width: 220px; height:220px; object-fit:contain; display:block; margin: 0 auto; filter: drop-shadow(0 18px 40px rgba(0,0,0,0.6)); }
+              .title { text-align:center; font-weight:800; margin-top:8px; }
+              .sub { text-align:center; color:#9fb2c6; margin-top:6px; font-size:13px; }
+              .row { display:flex; justify-content:space-between; gap:12px; margin-top:12px; align-items:center; }
+              .field { font-size:13px; color:#bfeaf0; font-weight:700; }
+              .buttons { display:flex; gap:10px; justify-content:flex-end; margin-top:14px; }
+              button { padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:800; }
+              button.primary { background: linear-gradient(90deg,#06b6d4,#7c3aed); color:#fff; }
+              button.secondary { background: rgba(255,255,255,0.03); color:#dbeffd; }
+              .small { font-size:12px; color:#9fb2c6; margin-top:8px; text-align:center; }
+            </style>
+          </head>
+          <body>
+            <h2 style="margin:6px 0 0 0;">Trade Offer</h2>
+            <div class="small">From: <strong>${offered.__traderName}</strong></div>
+
+            <div class="card">
+              <img src="${escapedSprite}" alt="${offered.name}" />
+              <div class="title">${offered.name.toUpperCase()}</div>
+              <div class="sub">${offered.rarity} • ₿ ${Math.round(offered.cryptoWorth)}</div>
+
+              <div class="row">
+                <div class="field">Types: ${offered.types.join(", ")}</div>
+                <div class="field">ID: ${offered.speciesId}</div>
+              </div>
+
+              <div class="row" style="margin-top:10px;">
+                <div class="field">Offered to receive: <strong>${local.name.toUpperCase()}</strong></div>
+              </div>
+
+              <div class="buttons">
+                <button class="secondary" id="decline">Decline</button>
+                <button class="primary" id="accept">Accept Trade</button>
+              </div>
+            </div>
+
+            <script>
+              const offer = ${JSON.stringify(offered)};
+              const origin = window.opener ? window.opener.location.origin : "*";
+              document.getElementById("accept").addEventListener("click", () => {
+                try {
+                  window.opener.postMessage({ type: "trade-accept", offer: offer }, origin);
+                } catch (err) {
+                  window.opener.postMessage({ type: "trade-accept", offer: offer }, "*");
+                }
+                window.close();
+              });
+              document.getElementById("decline").addEventListener("click", () => {
+                try {
+                  window.opener.postMessage({ type: "trade-decline" }, origin);
+                } catch (err) {
+                  window.opener.postMessage({ type: "trade-decline" }, "*");
+                }
+                window.close();
+              });
+            </script>
+          </body>
+        </html>
+      `;
+
+      popup.document.open();
+      popup.document.write(html);
+      popup.document.close();
+      popup.focus();
+
+    } catch (err) {
+      console.error("Failed to generate trade offer", err);
+      window.alert("Failed to generate trade offer. Try again.");
+    } finally {
+      setIsGeneratingOffer(false);
+    }
   }
 
   return(
@@ -133,6 +331,7 @@ export default function MonsterModal({
         <Button
         variant='contained'
         className='grow w-4 h-4'
+        onClick={generateTradeOfferPopup}
         >
           Trade
         </Button>
@@ -140,6 +339,7 @@ export default function MonsterModal({
         variant='contained'
         color='secondary'
         className='grow w-4 h-4'
+        onClick={handleSell}
         >
           Sell
         </Button>
@@ -168,6 +368,7 @@ export default function MonsterModal({
       </Button>
       <Button
       size='small'
+      onClick={saveChanges}
       >
       Save Changes
       </Button>

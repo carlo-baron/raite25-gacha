@@ -18,11 +18,21 @@ import MonsterCard from './MonsterCard';
 import MonsterModal from './MonsterModal';
 
 interface MonsterListProps{
-  monsters: PokemonType[]
+  monsters: PokemonType[];
+  onUpdate: (updated: PokemonType) => void;
+  onDelete: (uid: string) => void;
+  onSell: (uid: string) => void;
+  addMonster: (monster: PokemonType) => void;
+  creditTokens: (amt: number, note: string) => void;
 }
 
 export default function MonsterList({
   monsters,
+  onUpdate,
+  onDelete,
+  onSell,
+  addMonster,
+  creditTokens
 }:MonsterListProps){
   const [filtered, setFiltered] = useState<PokemonType[]>(monsters);
   const [selected, setSelected] = useState<PokemonType | null>(null);
@@ -124,6 +134,22 @@ export default function MonsterList({
             monster={selected}
             open={selected !== null}
             onClose={() => setSelected(null)}
+            onSave={(updated) => {
+              onUpdate(updated);
+              setSelected(null);
+            }}
+            onDelete={(uid) => {
+              if(onDelete) onDelete(uid);
+              setSelected(null);
+            }}
+            onSell={(uid) => {
+              if(onSell) onSell(uid);
+              setSelected(null);
+            }}
+            addMonster={(monster) => addMonster(monster)}
+            creditTokens={(amt, note) => {
+              if(creditTokens) creditTokens(amt, note);
+            }}
             />
           )
         }
