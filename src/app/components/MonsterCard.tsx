@@ -57,7 +57,7 @@ export default function MonsterCard({id, monster, onClick}: {id: string; monster
             src={monster.sprite}
             alt={monster.name} 
             animate={
-              hovered ? {scale: 1.1, y: -50} : {}
+              hovered ? {scale: 1.05, y: -30} : {}
             }
             />
             <Chip 

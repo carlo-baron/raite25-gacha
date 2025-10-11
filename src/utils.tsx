@@ -142,3 +142,11 @@ export interface PokemonType {
   history: { ts: number; event: string; deltaWorth: number }[];
 }
 
+export const maxBaseStats: Record<string, number> = {
+  hp: 255,
+  attack: 190,
+  defense: 230,
+  "special-attack": 194,
+  "special-defense": 230,
+  speed: 200
+}as const;
