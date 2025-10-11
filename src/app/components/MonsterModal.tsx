@@ -20,6 +20,7 @@ import{
   fetchPokemonData
 } from '@/utils';
 import ShuffleStatGame from './ShuffleStatGame';
+import ElementalTossGame from './ElementalTossGame';
 import {
   useState,
   useEffect,
@@ -81,6 +82,17 @@ interface ShuffleResult {
   source: string;
 }
 
+interface TossResult {
+  zone: string;
+  zoneId: string;
+  statKey: string;
+  delta: number;
+  deltaWorth: number;
+  matched: boolean;
+  message: string;
+  source: string;
+}
+
 interface MonsterModalProps{
   open: boolean;
   onClose: () => void;
@@ -135,7 +147,7 @@ export default function MonsterModal({
     return () => window.removeEventListener("message", onMessage);
   }, [local, onDelete, addMonster, onClose]);
 
-  function handleMiniGameResult(result: ShuffleResult) {
+  function handleMiniGameResult(result: ShuffleResult | TossResult) {
     const updated = applyResultToLocal(local, result);
     setLocal(updated);
     setLastActionMsg(result.message);
@@ -354,10 +366,20 @@ export default function MonsterModal({
       <MonsterStatCard 
       monster={monster}
       />
-      <ShuffleStatGame
-      monster={monster}
-      onResult={handleMiniGameResult}
+      <Paper 
+      elevation={3}
+      className="flex flex-col gap-4 p-2"
+      >
+        <Typography variant="h6">Care Interactions</Typography>
+        <ShuffleStatGame
+        monster={monster}
+        onResult={handleMiniGameResult}
+        />
+        <ElementalTossGame 
+        monster={monster}
+        onResult={handleMiniGameResult}
       />
+      </Paper>
     </DialogContent>
     <DialogActions>
       <Button

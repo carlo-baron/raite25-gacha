@@ -163,28 +163,24 @@ export default function ShuffleStatGame({
   });
 
   return (
-    <Paper elevation={3} className="flex flex-col gap-4 p-2">
-      <Typography variant="h6">Care Interactions</Typography>
+    <Box>
+      <Typography className="capitalize" variant="body1">
+        Stat boost bonus
+      </Typography>
 
-      <Box>
-        <Typography className="capitalize" variant="body1">
-          Stat boost shuffle
-        </Typography>
-
-        <Box
-          className="flex justify-center gap-2 p-2"
-          style={{ perspective: '800px' }}
-        >
-          {mappedCards}
-        </Box>
-
-        {message && (
-          <Typography variant="subtitle2" className="mt-2">
-            {message}
-          </Typography>
-        )}
+      <Box
+        className="flex justify-center gap-2 p-2"
+        style={{ perspective: '800px' }}
+      >
+        {mappedCards}
       </Box>
-    </Paper>
+
+      {message && (
+        <Typography variant="subtitle2" className="mt-2">
+          {message}
+        </Typography>
+      )}
+    </Box>
   );
 }
 
