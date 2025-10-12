@@ -51,7 +51,7 @@ export default function BerryCatcherGame(){
   useEffect(() => {
     async function initGame() {
       try {
-        const pokemon = await fetchPokemonData(name);
+        const pokemon = await fetchPokemonData(name as string);
         if (!pokemon) {
           router.push('/');
           return;

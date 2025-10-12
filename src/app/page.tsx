@@ -5,38 +5,53 @@ import {
   Box,
   Button,
   AppBar,
-  Paper,
   Toolbar,
   Typography,
-  Chip,
 } from '@mui/material';
 import {
   useState,
   useEffect,
-  useRef,
 } from 'react';
 import {
   PULL_COST,
   PokemonType,
+  Wallet,
+  loadMonstersFromStorage,
+  saveMonstersToStorage,
+  loadWalletFromStorage,
+  saveWalletToStorage,
+  INITIAL_TOKENS,
 } from '@/utils';
 import Gacha from './components/Gacha';
 import MonsterList from './components/MonsterList';
 
-interface WalletHistory {
-  ts: number;
-  type: "credit" | "debit";
-  amount: number;
-  note: string;
-}
-
-interface Wallet {
-  balance: number;
-  history: WalletHistory[];
-}
-
 export default function Home() {
-  const [monsters, setMonsters] = useState<PokemonType[]>([]);
-  const [wallet, setWallet] = useState<Wallet>({ balance: 5000, history: [] });
+  const [monsters, setMonsters] = useState<PokemonType[]>(() => {
+    const saved = loadMonstersFromStorage();
+    return saved ? saved : [];
+  });
+  const [wallet, setWallet] = useState<Wallet>(() => {
+    const w = loadWalletFromStorage();
+    if (w && typeof w.balance === "number") return w;
+    else {
+      const initial: Wallet = {
+        balance: INITIAL_TOKENS,
+        history: [
+          { ts: Date.now(), type: "credit", amount: INITIAL_TOKENS, note: "Starting demo balance" },
+        ],
+      };
+      saveWalletToStorage(initial);
+      return(initial);
+    }
+  });
+
+  useEffect(() => {
+    saveMonstersToStorage(monsters);
+  }, [monsters]);
+
+  useEffect(() => {
+    saveWalletToStorage(wallet);
+  }, [wallet]);
 
   function addMonster(monster: PokemonType) {
     setMonsters(prev => [monster, ...prev]);

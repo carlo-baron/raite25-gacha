@@ -150,3 +150,63 @@ export const maxBaseStats: Record<string, number> = {
   "special-defense": 230,
   speed: 200
 }as const;
+
+//localstorage n shih
+
+//monsters 
+const STORAGE_KEY_MONSTERS = "cmc_monsters_v1";
+const STORAGE_KEY_WALLET = "cmc_wallet_v1";
+
+export function loadMonstersFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_MONSTERS);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error("loadMonstersFromStorage", err);
+    return [];
+  }
+}
+
+export function saveMonstersToStorage(monsters: PokemonType[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY_MONSTERS, JSON.stringify(monsters));
+  } catch (err) {
+    console.error("saveMonstersToStorage", err);
+  }
+}
+
+//wallet part
+
+export const INITIAL_TOKENS = 5000;
+
+interface WalletHistory {
+  ts: number;
+  type: "credit" | "debit";
+  amount: number;
+  note: string;
+}
+
+export interface Wallet {
+  balance: number;
+  history: WalletHistory[];
+}
+
+export function loadWalletFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_WALLET);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error("loadWalletFromStorage", err);
+    return null;
+  }
+}
+
+export function saveWalletToStorage(wallet: Wallet) {
+  try {
+    localStorage.setItem(STORAGE_KEY_WALLET, JSON.stringify(wallet));
+  } catch (err) {
+    console.error("saveWalletToStorage", err);
+  }
+}
