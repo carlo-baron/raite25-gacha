@@ -1,5 +1,8 @@
 "use client";
 
+import{
+  useRouter
+} from 'next/navigation';
 import {
   motion
 } from 'motion/react';
@@ -477,6 +480,7 @@ function MonsterInfoCard({
       />
     );
   });
+  const router = useRouter();
 
   return(
     <Paper
@@ -527,6 +531,19 @@ function MonsterInfoCard({
           </Box>
         </Paper>
       </Box>
+      <Button
+      variant='contained'
+      className='col-span-2'
+      onClick={() => router.push(`/catch/${monster.name}`)}
+      >
+        Feed
+      </Button>
+      <Button
+      variant='contained'
+      className='col-span-2'
+      >
+        Battle
+      </Button>
     </Paper>
   );
 }
