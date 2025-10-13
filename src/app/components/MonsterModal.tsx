@@ -541,6 +541,7 @@ function MonsterInfoCard({
       <Button
       variant='contained'
       className='col-span-2'
+      onClick={() => router.push(`/battle/${monster.name}`)}
       >
         Battle
       </Button>
