@@ -86,7 +86,7 @@ export default function BerryCatcherGame(){
     }
 
     initGame();
-  }, [name]);
+  }, [name, router]);
 
   useEffect(() => {
     if(berryData.length <= 0 || over) return;

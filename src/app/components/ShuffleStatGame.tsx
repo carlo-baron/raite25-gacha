@@ -72,11 +72,11 @@ export default function ShuffleStatGame({
 
   const config = useMemo(() => getRarityConfig(monster.rarity), [monster.rarity]);
 
-  function reshuffle() {
-    setLockedIndex(null);
-    setMessage(null);
-    setShuffled(shuffleArray(STAT_KEYS));
-  }
+  //function reshuffle() {
+  //  setLockedIndex(null);
+  //  setMessage(null);
+  //  setShuffled(shuffleArray(STAT_KEYS));
+  //}
 
   async function onPick(index: number) {
     if (lockedIndex !== null) return;

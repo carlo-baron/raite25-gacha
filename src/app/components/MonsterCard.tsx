@@ -7,7 +7,6 @@ import{
   Typography,
   Card,
   CardActionArea,
-  CardMedia,
   CardContent,
   Chip,
 } from '@mui/material';

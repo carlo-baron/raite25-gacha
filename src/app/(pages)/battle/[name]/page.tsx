@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   fetchBattleMon,
   BattleMonType,
@@ -66,6 +66,7 @@ export default function Home() {
 
       try {
         const player = await fetchBattleMon(param.name as string);
+        if(!player) return;
         player.stats = playerMonRaw.stats;
         player.rarity = playerMonRaw.rarity;
 

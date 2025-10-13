@@ -78,12 +78,12 @@ export const TIERS = [
       "ekans", "nidoran-f", "nidoran-m", "vulpix"
     ],
   },
-];
+] as const;
 
 export const TIER_POOLS = TIERS.reduce((acc, tier) => {
   acc[tier.name] = tier.pokemon;
   return acc;
-}, {} as Record<string, string[]>);
+}, {} as Record<string, readonly string[]>);
 
 // --- Type Definitions ---
 
@@ -110,9 +110,20 @@ export interface RawPokemonResponse {
   cries: { latest: string };
   sprites: {
     front_default: string;
+    back_default: string;
     other?: {
       ['official-artwork']: { front_default: string };
     };
+     versions: {
+          'generation-v': {
+            'black-white': {
+              animated: {
+                front_default: string;
+                back_default: string;
+              };
+            };
+          };
+        };
   };
   stats: PokemonStat[];
   types: PokemonTypeSlot[];
@@ -192,7 +203,7 @@ export const maxBaseStats: Record<string, number> = {
 const STORAGE_KEY_MONSTERS = "cmc_monsters_v1";
 const STORAGE_KEY_WALLET = "cmc_wallet_v1";
 
-export function loadMonstersFromStorage() {
+export function loadMonstersFromStorage(): PokemonType[]{
   try {
     const raw = localStorage.getItem(STORAGE_KEY_MONSTERS);
     if (!raw) return [];
@@ -264,7 +275,15 @@ export interface BattleMonType {
     front: string;
     back: string;
   };
+  rarity?: Rarity
   stats: Record<string, number>;
+}
+
+interface RawMove{
+  move: {
+    name: string;
+    url: string;
+  }
 }
 
 export async function getDamageMoves(mon: string | number): Promise<Move[]> {
@@ -273,7 +292,7 @@ export async function getDamageMoves(mon: string | number): Promise<Move[]> {
 
   const data = await res.json();
 
-  const movePromises = data.moves.map(async (item: any) => {
+  const movePromises = data.moves.map(async (item: RawMove) => {
     const moveRes = await fetch(item.move.url);
     if (!moveRes.ok) return null;
 
@@ -312,7 +331,7 @@ export async function fetchBattleMon(name: string): Promise<BattleMonType | unde
   try {
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
     if (!res.ok) throw new Error(`Failed to fetch Pokémon: ${name}`);
-    const data = await res.json();
+    const data: RawPokemonResponse = await res.json();
 
     const moves = await getDamageMoves(name);
     const types = data.types.map(t => t.type.name);
@@ -323,10 +342,12 @@ export async function fetchBattleMon(name: string): Promise<BattleMonType | unde
       types,
       moves,
       sprites: {
-        front: data.sprites.versions['generation-v']['black-white'].animated.front_default || data.sprites.front_default,
-        back: data.sprites.versions['generation-v']['black-white'].animated.back_default || data.sprites.back_default,
+        front: data.sprites.versions['generation-v']['black-white'].animated.front_default 
+          || data.sprites.front_default,
+        back: data.sprites.versions['generation-v']['black-white'].animated.back_default 
+          || data.sprites.back_default,
       },
-      stats: data.stats.reduce((acc: Record<string, number>, stat: any, index: number) => {
+      stats: data.stats.reduce((acc: Record<string, number>, stat: PokemonStat, index: number) => {
         const base = stat.base_stat;
         acc[stat.stat.name] = index === 0 ? base + 60 : base + 5;
         return acc;
