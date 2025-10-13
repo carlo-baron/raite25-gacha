@@ -19,7 +19,9 @@ import{
   Backdrop,
   Button,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import typeRelations from '@/../public/type-relations.json'; 
 
 interface BattleState {
@@ -223,6 +225,18 @@ export default function Home() {
 
   return (
     <Container className='relative flex flex-col gap-4 h-screen justify-center items-center' disableGutters>
+      <IconButton
+      size='large'
+      sx={{
+        position: 'absolute',
+        top: 4,
+        left: 4
+      }}
+      onClick={() => router.push('/')}
+      >
+        <ArrowBackIosNewIcon />
+      </IconButton>
+
       <Backdrop open={battleState.isOver} className='gap-4 flex flex-col'>
         <Typography variant='h2' fontWeight={700}>
           {battleState.winner?.name === battleState.playerMon?.name ? 'You Win' : 'You Lost'}

@@ -1,57 +1,89 @@
 export const TIERS = [
-  { name: "EX", weight: 0.003, pokemon: ["mew"] },
-
+  {
+    name: "EX",
+    weight: 0.003,
+    pokemon: [
+      "mewtwo", "mew", "lugia", "ho-oh", "rayquaza",
+      "groudon", "kyogre", "dialga", "palkia", "giratina-altered",
+      "giratina-origin", "arceus", "darkrai", "deoxys-normal",
+      "deoxys-attack", "deoxys-defense", "deoxys-speed",
+      "regigigas", "reshiram", "zekrom", "kyurem", "kyurem-black",
+      "kyurem-white", "meloetta-aria", "meloetta-pirouette",
+      "genesect", "shaymin-land", "shaymin-sky", "celebi",
+      "manaphy", "phione", "victini", "cresselia", "latias", "latios",
+      "jirachi", "heatran", "tornadus-therian", "thundurus-therian",
+      "landorus-therian", "tornadus-incarnate", "thundurus-incarnate",
+      "landorus-incarnate", "regirock", "regice", "registeel",
+      "suicune", "entei", "raikou"
+    ],
+  },
   {
     name: "Ultra-Rare",
     weight: 0.02,
     pokemon: [
-      // Gen4
-      "dialga","palkia","giratina","uxie","mesprit","azelf","heatran","regigigas","cresselia","phione","manaphy","darkrai","shaymin","arceus",
-      // Gen5
-      "victini","cobalion","terrakion","virizion","tornadus","thundurus","landorus","reshiram","zekrom","kyurem","keldeo","meloetta","genesect"
+      "dragonite", "tyranitar", "metagross", "garchomp", "salamence",
+      "infernape", "blaziken", "empoleon", "sceptile", "swampert",
+      "charizard", "venusaur", "blastoise", "lucario", "gallade",
+      "togekiss", "gardevoir", "snorlax", "scizor", "heracross",
+      "gengar", "alakazam", "machamp", "arcanine", "gyarados",
+      "electivire", "magmortar", "rhyperior", "mamoswine",
+      "tangrowth", "weavile", "abomasnow", "sylveon",
+      "glaceon", "leafeon", "flareon", "vaporeon", "jolteon", "espeon", "umbreon"
     ],
   },
-
   {
     name: "Rare",
     weight: 0.06,
     pokemon: [
-      "zapdos","dragonite",
-      // Gen2 legendaries
-      "raikou","entei","suicune","lugia","ho-oh","celebi",
-      // Gen3 legendaries (Hoenn)
-      "regirock","regice","registeel","latias","latios","kyogre","groudon","rayquaza","jirachi","deoxys"
+      "lapras", "kingdra", "milotic", "ninetales", "rapidash",
+      "starmie", "exeggutor", "aerodactyl", "porygon-z",
+      "porygon2", "rhydon", "magneton", "magnezone",
+      "nidoqueen", "nidoking", "slowbro", "slowking",
+      "steelix", "gliscor", "yanmega", "camerupt",
+      "flygon", "altaria", "walrein", "torkoal", "manectric",
+      "houndoom", "cacturne", "swellow", "exploud", "hariyama",
+      "cradily", "armaldo", "ludicolo", "shiftry", "claydol",
+      "golem", "weezing", "victreebel", "vileplume", "tangela",
+      "politoed", "electabuzz", "magmar", "pinsir", "tauros"
     ],
   },
-
   {
     name: "Uncommon",
     weight: 0.1887,
     pokemon: [
-      "lapras","ninetales",
-      // Gen6 & Gen7 pseudo-legendary entries (kept as previously requested)
-      "goodra","kommo-o"
+      "charmeleon", "wartortle", "ivysaur", "haunter", "machoke",
+      "kadabra", "poliwhirl", "graveler", "nidorina", "nidorino",
+      "slowpoke", "weepinbell", "gloom", "persian", "primeape",
+      "golbat", "magneton", "dugtrio", "seadra", "dodrio",
+      "arbok", "raichu", "marowak", "tentacruel", "sandslash",
+      "parasect", "venomoth", "rapidash", "muk", "cloyster",
+      "hypno", "starmie", "kingler", "electrode", "lickitung",
+      "hitmonlee", "hitmonchan", "chansey", "mr-mime", "lapras",
+      "ditto", "eevee", "porygon", "kabutops", "omastar", "scyther"
     ],
   },
-
-  // Expanded Common pool with the requested selections (no megas, non-legends, no pseudo-legendaries)
   {
     name: "Common",
-    weight: 0.7283, // adjusted so total ≈ 1 (weights normalized later)
+    weight: 0.7283,
     pokemon: [
-      // original commons
-      "pikachu","pidgeot","gengar","alakazam",
-      // 20 Gen 4 picks (Sinnoh) - non-legendary, non-pseudo
-      "turtwig","grotle","torterra","chimchar","monferno","infernape","piplup","prinplup","empoleon","starly",
-      "staravia","staraptor","bidoof","bibarel","kricketot","kricketune","shinx","luxio","luxray","budew",
-      // 15 Gen 6 picks (Kalos) - non-legendary, non-pseudo
-      "chespin","quilladin","chesnaught","fennekin","braixen","delphox","froakie","frogadier","greninja","fletchling",
-      "fletchinder","talonflame","scatterbug","spewpa","vivillon",
-      // 10 Gen 3 picks (Hoenn) - non-legendary, non-pseudo
-      "treecko","grovyle","sceptile","torchic","combusken","blaziken","mudkip","marshtomp","swampert","breloom"
+      "rattata", "raticate", "pidgey", "pidgeotto", "pidgeot",
+      "spearow", "fearow", "caterpie", "metapod", "butterfree",
+      "weedle", "kakuna", "beedrill", "zubat", "golbat",
+      "oddish", "bellsprout", "tentacool", "geodude",
+      "onix", "venonat", "paras", "diglett", "meowth",
+      "krabby", "horsea", "seel", "gastly", "drowzee",
+      "cubone", "magnemite", "grimer", "shellder",
+      "voltorb", "exeggcute", "goldeen", "staryu",
+      "magikarp", "ponyta", "doduo", "sandshrew",
+      "ekans", "nidoran-f", "nidoran-m", "vulpix"
     ],
   },
-] as const;
+];
+
+export const TIER_POOLS = TIERS.reduce((acc, tier) => {
+  acc[tier.name] = tier.pokemon;
+  return acc;
+}, {} as Record<string, string[]>);
 
 // --- Type Definitions ---
 

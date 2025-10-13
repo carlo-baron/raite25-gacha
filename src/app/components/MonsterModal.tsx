@@ -20,7 +20,8 @@ import{
 import{
   PokemonType,
   maxBaseStats,
-  fetchPokemonData
+  fetchPokemonData,
+  TIER_POOLS,
 } from '@/utils';
 import ShuffleStatGame from './ShuffleStatGame';
 import ElementalTossGame from './ElementalTossGame';
@@ -29,31 +30,6 @@ import {
   useEffect,
   useRef,
 } from 'react';
-
-const TIER_POOLS = {
-  "Common": [
-    "pikachu","pidgeot","gengar","alakazam",
-    // Gen4 (20)
-    "turtwig","grotle","torterra","chimchar","monferno","infernape","piplup","prinplup","empoleon","starly",
-    "staravia","staraptor","bidoof","bibarel","kricketot","kricketune","shinx","luxio","luxray","budew",
-    // Gen6 (15)
-    "chespin","quilladin","chesnaught","fennekin","braixen","delphox","froakie","frogadier","greninja","fletchling",
-    "fletchinder","talonflame","scatterbug","spewpa","vivillon",
-    // Gen3 (10)
-    "treecko","grovyle","sceptile","torchic","combusken","blaziken","mudkip","marshtomp","swampert","breloom"
-  ],
-  "Uncommon": ["lapras","ninetales","goodra","kommo-o"],
-  "Rare": [
-    "zapdos","dragonite",
-    "raikou","entei","suicune","lugia","ho-oh","celebi",
-    "regirock","regice","registeel","latias","latios","kyogre","groudon","rayquaza","jirachi","deoxys"
-  ],
-  "Ultra-Rare": [
-    "dialga","palkia","giratina","uxie","mesprit","azelf","heatran","regigigas","cresselia","phione","manaphy","darkrai","shaymin","arceus",
-    "victini","cobalion","terrakion","virizion","tornadus","thundurus","landorus","reshiram","zekrom","kyurem","keldeo","meloetta","genesect"
-  ],
-  "EX": ["mew"]
-};
 
 const NATO = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliett","Kilo","Lima","Mike","November","Oscar","Papa","Quebec","Romeo","Sierra","Tango","Uniform","Victor","Whiskey","Xray","Yankee","Zulu"];
 
