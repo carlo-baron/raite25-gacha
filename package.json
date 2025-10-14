@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@coinbase/onchainkit": "^1.1.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@farcaster/miniapp-sdk": "^0.2.0",
@@ -16,8 +17,10 @@
     "@mui/material": "^7.3.4",
     "motion": "^12.23.22",
     "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "viem": "^2.38.2",
+    "wagmi": "^2.18.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

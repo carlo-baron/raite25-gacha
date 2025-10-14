@@ -4,6 +4,8 @@ import ThemeProvider from './theme';
 import './globals.css';
 
 import SdkInit from './SdkInit';
+import '@coinbase/onchainkit/styles.css';
+import BaseProvider from './BaseProvider';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,14 +41,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.className}>
-      <body className='antialiased'>
-        <ThemeProvider>
-            <SdkInit />
-            {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <BaseProvider>
+      <html lang="en" className={inter.className}>
+        <body className='antialiased'>
+          <ThemeProvider>
+              <SdkInit />
+              {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </BaseProvider>
   );
 }
 

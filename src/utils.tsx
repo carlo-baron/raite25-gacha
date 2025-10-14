@@ -233,7 +233,7 @@ interface WalletHistory {
   note: string;
 }
 
-export interface Wallet {
+export interface WalletType {
   balance: number;
   history: WalletHistory[];
 }
@@ -249,7 +249,7 @@ export function loadWalletFromStorage() {
   }
 }
 
-export function saveWalletToStorage(wallet: Wallet) {
+export function saveWalletToStorage(wallet: WalletType) {
   try {
     localStorage.setItem(STORAGE_KEY_WALLET, JSON.stringify(wallet));
   } catch (err) {

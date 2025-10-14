@@ -1,9 +1,8 @@
-"use client";
+"use client" 
 
 import {
   Container,
   Box,
-  Button,
   AppBar,
   Toolbar,
   Typography,
@@ -15,7 +14,7 @@ import {
 import {
   PULL_COST,
   PokemonType,
-  Wallet,
+  WalletType,
   loadMonstersFromStorage,
   saveMonstersToStorage,
   loadWalletFromStorage,
@@ -24,17 +23,35 @@ import {
 } from '@/utils';
 import Gacha from './components/Gacha';
 import MonsterList from './components/MonsterList';
+import {
+  ConnectWallet,
+  Wallet,
+  WalletDropdown,
+} from '@coinbase/onchainkit/wallet';
+import { useReadContract, useAccount } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
+import GachaTokenAbi from '@/abi/GachaToken.json';
+const GACHA_TOKEN_ADDRESS = '0x023b4eC3DD105a35F35a1bD7795e12906EdE23D1';
 
 export default function Home() {
+  const { address, isConnected } = useAccount();
+  const { data: balance } = useReadContract({
+    address: GACHA_TOKEN_ADDRESS,
+    abi: GachaTokenAbi,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: baseSepolia.id
+  });
+
   const [monsters, setMonsters] = useState<PokemonType[]>(() => {
     const saved = loadMonstersFromStorage();
     return saved ? saved : [];
   });
-  const [wallet, setWallet] = useState<Wallet>(() => {
+  const [wallet, setWallet] = useState<WalletType>(() => {
     const w = loadWalletFromStorage();
     if (w && typeof w.balance === "number") return w;
     else {
-      const initial: Wallet = {
+      const initial: WalletType = {
         balance: INITIAL_TOKENS,
         history: [
           { ts: Date.now(), type: "credit", amount: INITIAL_TOKENS, note: "Starting demo balance" },
@@ -44,6 +61,19 @@ export default function Home() {
       return(initial);
     }
   });
+
+  useEffect(() => {
+    if(!isConnected || !balance) return;
+    console.log('Balance:', Number(balance) / 1e18);
+    if(isConnected) {
+      setWallet({
+        balance: Number(balance) / 1e18,
+        history: [
+          { ts: Date.now(), type: "credit", amount: INITIAL_TOKENS, note: "Starting demo balance" },
+        ],
+      });
+    }
+  },[balance, isConnected]);
 
   useEffect(() => {
     saveMonstersToStorage(monsters);
@@ -116,13 +146,10 @@ export default function Home() {
           >
             GachaCare
           </Typography>
-          <Button
-          variant='contained'
-          className='text-xs'
-          size='small'
-          >
-            Connect
-          </Button>
+          <Wallet>
+            <ConnectWallet/>
+            <WalletDropdown />
+          </Wallet>
         </Toolbar>
       </AppBar>
       <Box 
