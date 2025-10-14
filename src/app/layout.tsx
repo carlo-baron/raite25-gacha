@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import ThemeProvider from './theme';
 import './globals.css';
 
+import SdkInit from './SdkInit';
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -23,6 +25,7 @@ export default function RootLayout({
     <html lang="en" className={inter.className}>
       <body className='antialiased'>
         <ThemeProvider>
+            <SdkInit />
             {children}
         </ThemeProvider>
       </body>

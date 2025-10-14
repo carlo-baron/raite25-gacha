@@ -395,15 +395,16 @@ function MonsterStatCard({monster}:{monster: PokemonType}){
       className="grow"
       sx={{ borderRadius: '99999px' }}
       >
-        <Box
+      <Box
         component={motion.div}
         className='rounded-full bg-green-500 h-full'
-        initial={{width: 0}}
-        whileInView={{
-          width: `${(value/maxBaseStats[name]) * 100}%`
-        }}
-        transition={{duration: 1, ease: 'easeOut'}}
-        />
+        initial={{ width: 0 }}
+        animate={
+          { width: `${(value / maxBaseStats[name]) * 100}%` }
+        }
+        transition={{ duration: 1, ease: 'easeOut' }}
+      />
+
       </Paper>
       <Typography
       className='min-w-[30px] text-center self-center'
