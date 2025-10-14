@@ -1,3 +1,5 @@
+const URL = 'https://raite25-gacha.vercel.app';
+
 function withValidProperties(properties: Record<string, undefined | string | string[]>) {
 return Object.fromEntries(
     Object.entries(properties).filter(([_, value]) => (Array.isArray(value) ? value.length > 0 : !!value))
@@ -18,26 +20,26 @@ return Response.json(
   },
   "miniapp": {
     "version": "1",
-    "name": "Example Mini App",
-    "homeUrl": "https://ex.co",
-    "iconUrl": "https://ex.co/i.png",
+    "name": "GachaCare",
+    "homeUrl": `${URL}`,
+    "iconUrl": `${URL}/globe.svg`,
     "splashImageUrl": "https://ex.co/l.png",
     "splashBackgroundColor": "#000000",
     "webhookUrl": "https://ex.co/api/webhook",
-    "subtitle": "Fast, fun, social",
-    "description": "A fast, fun way to challenge friends in real time.",
+    "subtitle": 'Pull NFTs, Care, Battle, Earn',
+    "description": "Be able to mint NFT pets, care for them, increase their stats, battle others, and a lot more.",
     "screenshotUrls": [
       "https://ex.co/s1.png",
       "https://ex.co/s2.png",
       "https://ex.co/s3.png"
     ],
-    "primaryCategory": "social",
-    "tags": ["example", "miniapp", "baseapp"],
+    "primaryCategory": "game",
+    "tags": ["gacha", "petcare", "baseapp", "game"],
     "heroImageUrl": "https://ex.co/og.png",
-    "tagline": "Play instantly",
-    "ogTitle": "Example Mini App",
-    "ogDescription": "Challenge friends in real time.",
-    "ogImageUrl": "https://ex.co/og.png",
+    "tagline": 'Pull NFTs, Care, Battle, Earn',
+    "ogTitle": "GachaCare - Pet Game",
+    "ogDescription":"Be able to mint NFT pets, care for them, increase their stats, battle others, and a lot more.",
+    "ogImageUrl": `${URL}/globe.svg`,
     "noindex": true
   }
 }

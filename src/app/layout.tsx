@@ -13,17 +13,17 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: "Gacha Care",
+        title: "GachaCare",
         description: "Pull NFTs, Raise, Battle, Earn",
         other: {
         'fc:miniapp': JSON.stringify({
             version: 'next',
             imageUrl: 'https://raite25-gacha.vercel.app/globe.svg',
             button: {
-                title: `Launch Your App Name`,
+                title: `Launch GachaCare`,
                 action: {
-                    type: 'Launch Gacha Care',
-                    name: 'Your App Name',
+                    type: 'launch_miniapp',
+                    name: 'GachaCare',
                     url: 'https://raite25-gacha.vercel.app/',
                     splashImageUrl: 'https://raite25-gacha.vercel.app/globe.svg',
                     splashBackgroundColor: '#000000',
