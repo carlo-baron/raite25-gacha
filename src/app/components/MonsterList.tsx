@@ -63,7 +63,9 @@ export default function MonsterList({
       className='mb-4 rounded-md'
       elevation={3}
       >
-        <Box className="p-2 header text-sm/tight">
+        <Box 
+        className="p-2 header text-sm/tight"
+        >
           <Typography
           variant='h6'
           fontWeight={600}
@@ -109,10 +111,14 @@ export default function MonsterList({
           />
         </Box>
         <Box
-        className='grow w-full flex flex-col px-4 py-2 gap-2'
+        className='md:grid lg:grid-cols-5 md:grid-cols-3 grow w-full flex flex-col px-4 py-2 gap-2'
         sx={{
           overflowY: 'auto',
-          maxHeight: '350px',
+          maxHeight: {
+            xs: '65vh',
+            sm: '85vh',
+            md: '100vh',
+          },
         }}
         >
           {

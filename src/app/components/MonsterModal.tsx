@@ -16,6 +16,7 @@ import{
   DialogActions,
   Button,
   Chip,
+  IconButton,
 } from '@mui/material';
 import{
   PokemonType,
@@ -30,6 +31,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 
 const NATO = ["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliett","Kilo","Lima","Mike","November","Oscar","Papa","Quebec","Romeo","Sierra","Tango","Uniform","Victor","Whiskey","Xray","Yankee","Zulu"];
 
@@ -441,6 +443,7 @@ function MonsterStatCard({monster}:{monster: PokemonType}){
 function MonsterInfoCard({
   monster,
 }: { monster: PokemonType; }){
+  const [crying, setCrying] = useState<boolean>(false);
 
   const mappedTypes = monster.types.map((type, index) => {
     return (
@@ -465,7 +468,23 @@ function MonsterInfoCard({
     >
       <Paper
       elevation={5}
+      className='relative'
       >
+        <IconButton
+        size='large'
+        sx={{position: 'absolute', right: 4, top: 4, zIndex: 10}}
+        onClick={() => {
+          if(crying) return;
+          setCrying(true);
+          const cry = monster.cry; 
+          const audio = new Audio(cry);
+          audio.volume = 0.5;
+          audio.play();
+          audio.onended = () =>setCrying(false);
+        }}
+        >
+          <VolumeUpIcon />
+        </IconButton>
         <motion.img 
         src={monster.sprite}
         alt={monster.name}

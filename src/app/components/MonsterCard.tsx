@@ -10,6 +10,7 @@ import{
   CardContent,
   Chip,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { PokemonType, rarityBadges } from '@/utils';
 import {
   useState
@@ -45,24 +46,37 @@ export default function MonsterCard({id, monster, onClick}: {id: string; monster
       y: -5
     }}
     onClick={() => onClick(monster)}
+    sx={{
+      overflow: 'visible',
+      position: 'relative'
+    }}
     >
-      <Card>
+      <Card
+      sx={{
+        overflow: 'visible',
+        position: 'relative'
+      }}
+      >
         <CardActionArea>
           <CardContent
           className='justify-center items-center flex flex-col'
+          sx={{
+            overflow: 'visible',
+            position: 'relative'
+          }}
           >
             <motion.img 
             className='self-center w-[60%] h-fit object-cover'
             src={monster.sprite}
             alt={monster.name} 
             animate={
-              hovered ? {scale: 1.05, y: -30} : {}
+              hovered ? {scale: 1.2, y: -5} : {}
             }
             />
             <Chip 
             component={motion.div}
             animate={
-              hovered ? {scale: 1.1} : {}
+              hovered ? {scale: 1.2} : {}
             }
             className='absolute left-4 top-4 capitalize'
             label={monster.rarity}
@@ -70,7 +84,9 @@ export default function MonsterCard({id, monster, onClick}: {id: string; monster
             sx={{
               fontSize: '12px',
               fontWeight: 800,
-              background: rarityColor?.color == '#fff' ? '' : rarityColor?.color,
+              background: rarityColor?.color == '#fff' 
+                ? '' 
+                : alpha(rarityColor!.color!, 0.7),
             }}
             />
           </CardContent>
