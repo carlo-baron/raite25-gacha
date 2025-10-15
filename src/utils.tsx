@@ -186,6 +186,7 @@ export interface PokemonType {
   rarity: Rarity;
   cryptoWorth: number;
   history: { ts: number; event: string; deltaWorth: number }[];
+  tokenId?: number;
 }
 
 export const maxBaseStats: Record<string, number> = {
@@ -202,10 +203,12 @@ export const maxBaseStats: Record<string, number> = {
 //monsters 
 const STORAGE_KEY_MONSTERS = "cmc_monsters_v1";
 const STORAGE_KEY_WALLET = "cmc_wallet_v1";
+type Address = `0x${string}`;
 
-export function loadMonstersFromStorage(): PokemonType[]{
+export function loadMonstersFromStorage(user: Address): PokemonType[]{
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_MONSTERS);
+    const itemKey = `${user}-${STORAGE_KEY_MONSTERS}`
+    const raw = localStorage.getItem(itemKey);
     if (!raw) return [];
     return JSON.parse(raw);
   } catch (err) {
@@ -214,9 +217,10 @@ export function loadMonstersFromStorage(): PokemonType[]{
   }
 }
 
-export function saveMonstersToStorage(monsters: PokemonType[]) {
+export function saveMonstersToStorage(user: Address, monsters: PokemonType[]) {
   try {
-    localStorage.setItem(STORAGE_KEY_MONSTERS, JSON.stringify(monsters));
+    const itemKey = `${user}-${STORAGE_KEY_MONSTERS}`
+    localStorage.setItem(itemKey, JSON.stringify(monsters));
   } catch (err) {
     console.error("saveMonstersToStorage", err);
   }
@@ -238,9 +242,10 @@ export interface WalletType {
   history: WalletHistory[];
 }
 
-export function loadWalletFromStorage() {
+export function loadWalletFromStorage(user: Address) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_WALLET);
+    const walletKey = `${user}-${STORAGE_KEY_WALLET}`
+    const raw = localStorage.getItem(walletKey);
     if (!raw) return null;
     return JSON.parse(raw);
   } catch (err) {
@@ -249,9 +254,10 @@ export function loadWalletFromStorage() {
   }
 }
 
-export function saveWalletToStorage(wallet: WalletType) {
+export function saveWalletToStorage(user: Address, wallet: WalletType) {
   try {
-    localStorage.setItem(STORAGE_KEY_WALLET, JSON.stringify(wallet));
+    const walletKey = `${user}-${STORAGE_KEY_WALLET}`
+    localStorage.setItem(walletKey, JSON.stringify(wallet));
   } catch (err) {
     console.error("saveWalletToStorage", err);
   }

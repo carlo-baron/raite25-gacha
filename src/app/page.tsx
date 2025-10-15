@@ -18,7 +18,6 @@ import {
   saveMonstersToStorage,
   loadWalletFromStorage,
   saveWalletToStorage,
-  INITIAL_TOKENS,
 } from '@/utils';
 import Gacha from './components/Gacha';
 import MonsterList from './components/MonsterList';
@@ -30,6 +29,7 @@ import {
 import { 
   useReadContract,
   useAccount,
+  useWatchContractEvent,
 } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 import GachaTokenAbi from '@/abi/GachaToken.json';
@@ -54,45 +54,47 @@ export default function Home() {
     chainId: baseSepolia.id
   });
 
-
-  const [monsters, setMonsters] = useState<PokemonType[]>(() => {
-    const saved = loadMonstersFromStorage();
-    return saved ? saved : [];
+  const [monsters, setMonsters] = useState<PokemonType[]>([])
+  const [wallet, setWallet] = useState<WalletType>({
+    balance: 0,
+    history: []
   });
-  const [wallet, setWallet] = useState<WalletType>(() => {
-    const w = loadWalletFromStorage();
-    if (w && typeof w.balance === "number") return w;
-    else {
+
+  useEffect(()=>{
+    if(!address || !isConnected || !balance){
+      return;
+    }
+    const savedMons = loadMonstersFromStorage(address);
+    if(savedMons){
+      setMonsters(savedMons);
+    }
+
+    const savedWallet = loadWalletFromStorage(address);
+    const formattedBalance = Number(balance)/1e18;
+    if(!savedWallet){
       const initial: WalletType = {
-        balance: INITIAL_TOKENS,
-        history: [
-          { ts: Date.now(), type: "credit", amount: INITIAL_TOKENS, note: "Starting demo balance" },
-        ],
+        balance: formattedBalance,
+        history: [],
       };
-      saveWalletToStorage(initial);
-      return(initial);
+      saveWalletToStorage(address, initial)
+      setWallet(initial);
+    }else{
+      setWallet(()=>{
+        const newWallet = {...savedWallet, balance: formattedBalance}
+        return newWallet
+      })
     }
-  });
+
+  }, [isConnected, address, balance]);
 
   useEffect(() => {
-    if(!isConnected || !balance) return;
-    console.log('Balance:', Number(balance) / 1e18);
-    if(isConnected) {
-      setWallet({
-        balance: Number(balance) / 1e18,
-        history: [
-          { ts: Date.now(), type: "credit", amount: INITIAL_TOKENS, note: "Starting demo balance" },
-        ],
-      });
-    }
-  },[balance, isConnected]);
-
-  useEffect(() => {
-    saveMonstersToStorage(monsters);
+    if(!address) return;
+    saveMonstersToStorage(address, monsters);
   }, [monsters]);
 
   useEffect(() => {
-    saveWalletToStorage(wallet);
+    if(!address || !wallet) return;
+    saveWalletToStorage(address, wallet);
   }, [wallet]);
 
   function addMonster(monster: PokemonType) {
