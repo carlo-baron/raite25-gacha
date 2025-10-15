@@ -240,11 +240,11 @@ export default function Home() {
 
       <Backdrop open={battleState.isOver} className='gap-4 flex flex-col'>
         <Typography variant='h2' fontWeight={700}>
-          {battleState.winner?.name === battleState.playerMon?.name ? 'You Win' : 'You Lost'}
+          {battleState.winner === battleState.playerMon ? 'You Win' : 'You Lost'}
         </Typography>
         <Button
           variant='contained'
-          color={battleState.winner?.name === battleState.playerMon?.name ? 'success' : 'error'}
+          color={battleState.winner === battleState.playerMon ? 'success' : 'error'}
           onClick={() => {
             setBattleState(prev => ({
               ...prev,

@@ -12,7 +12,6 @@ import {
   useEffect,
 } from 'react';
 import {
-  PULL_COST,
   PokemonType,
   WalletType,
   loadMonstersFromStorage,
@@ -28,10 +27,16 @@ import {
   Wallet,
   WalletDropdown,
 } from '@coinbase/onchainkit/wallet';
-import { useReadContract, useAccount } from 'wagmi';
+import { 
+  useReadContract,
+  useAccount,
+} from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 import GachaTokenAbi from '@/abi/GachaToken.json';
-const GACHA_TOKEN_ADDRESS = '0x023b4eC3DD105a35F35a1bD7795e12906EdE23D1';
+import GachaSystemAbi from '@/abi/GachaSystem.json';
+
+const GACHA_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_GACHA_TOKEN as `0x${string}`;
+const GACHA_SYSTEM_ADDRESS = process.env.NEXT_PUBLIC_GACHA_SYSTEM as `0x${string}`;
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -42,6 +47,13 @@ export default function Home() {
     args: address ? [address] : undefined,
     chainId: baseSepolia.id
   });
+  const { data: price } = useReadContract({
+    address: GACHA_SYSTEM_ADDRESS,
+    abi: GachaSystemAbi,
+    functionName: 'price',
+    chainId: baseSepolia.id
+  });
+
 
   const [monsters, setMonsters] = useState<PokemonType[]>(() => {
     const saved = loadMonstersFromStorage();
@@ -84,7 +96,7 @@ export default function Home() {
   }, [wallet]);
 
   function addMonster(monster: PokemonType) {
-    setMonsters(prev => [monster, ...prev]);
+      setMonsters(prev => [monster, ...prev]);
   }
 
   function updateMonster(updated: PokemonType) {
@@ -164,7 +176,7 @@ export default function Home() {
         refundTokens={(amt, note) => {
           creditTokens(amt, note || "Refund");
         }}
-        pullCost={PULL_COST}
+        pullCost={price ? (Number(price)/1e18) : 0}
         />
         <MonsterList 
         monsters={monsters}
