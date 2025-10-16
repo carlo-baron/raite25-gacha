@@ -54,6 +54,7 @@ import {
   useWaitForTransactionReceipt,
   useAccount,
   useReadContract,
+  useSwitchChain,
 } from 'wagmi';
 import { 
   decodeEventLog,
@@ -88,6 +89,7 @@ export default function Gacha({
   const [message, setMessage] = useState<string>('');
   const [revealMon, setRevealMon] = useState<boolean>(false);
   const { address } = useAccount();
+  const { switchChain } = useSwitchChain();
   
   const { data: currentAllowance } = useReadContract({
     address: GACHA_TOKEN_ADDRESS,
@@ -188,6 +190,14 @@ export default function Gacha({
     setMessage("Starting gacha pull...");
 
     try {
+      try{
+        await switchChain({chainId: baseSepolia.id});
+      } catch(err){
+        console.error("Network switch failed");
+        setMessage("Please switch your wallet to Base sepolia.");
+        setIsPulling(false);
+        return;
+      }
       if (walletBalance < pullCost) {
         setMessage("Insufficient tokens — top up to pull.");
         setIsPulling(false);
