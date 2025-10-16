@@ -265,7 +265,8 @@ export default function Gacha({
 
   async function executeGachaPull(monster: PokemonType) {
     try {
-      const tokenURI = generateTokenURI(monster);
+      //const tokenURI = generateTokenURI(monster);
+      const tokenURI = '';
       
       await writeContract({
         address: GACHA_SYSTEM_ADDRESS,

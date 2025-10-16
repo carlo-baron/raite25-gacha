@@ -113,7 +113,6 @@ export default function Home() {
   }, [wallet, address, loaded]);
 
   function addMonster(monster: PokemonType) {
-      console.log('onPull');
       setMonsters(prev => [monster, ...prev]);
   }
 
