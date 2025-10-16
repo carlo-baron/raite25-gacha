@@ -60,15 +60,7 @@ export default function Home() {
     history: []
   });
 
-  useEffect(()=>{
-    if(!isConnected){
-      setWallet({
-        balance: 0,
-        history: []
-      });
-      setMonsters([]);
-    }
-  },[isConnected]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(()=>{
     if(!address || !isConnected || !balance){
@@ -94,18 +86,31 @@ export default function Home() {
         return newWallet
       })
     }
-
+    setLoaded(true);
   }, [isConnected, address, balance]);
 
   useEffect(() => {
-    if(!address) return;
+    if(!address || !loaded) return;
     saveMonstersToStorage(address, monsters);
-  }, [monsters]);
+  }, [monsters, address, loaded]);
+
+  useEffect(()=>{
+    if(!isConnected){
+      setLoaded(false);
+      setWallet(
+        {
+          balance: 0,
+          history: [],
+        }
+      );
+      setMonsters([]);
+    }
+  },[isConnected]);
 
   useEffect(() => {
-    if(!address || !wallet) return;
+    if(!address || !loaded) return;
     saveWalletToStorage(address, wallet);
-  }, [wallet]);
+  }, [wallet, address, loaded]);
 
   function addMonster(monster: PokemonType) {
       console.log('onPull');
