@@ -1,12 +1,13 @@
 "use client";
+
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { baseSepolia } from 'wagmi/chains';
 import { SafeArea } from '@coinbase/onchainkit/minikit';
 
-export default function BaseProvider({children}:{children: React.ReactNode}){
+export default function BaseProvider({children, apiKey}:{children: React.ReactNode, apiKey?: string}){
   return(
     <OnchainKitProvider
-    apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+    apiKey={apiKey ?? ''}
     chain={baseSepolia}
     config={{
       appearance:{

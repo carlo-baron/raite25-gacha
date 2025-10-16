@@ -41,7 +41,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <BaseProvider>
+    <BaseProvider
+    apiKey={process.env.ONCHAINKIT_API_KEY}
+    >
       <html lang="en" className={inter.className}>
         <body className='antialiased'>
           <ThemeProvider>
