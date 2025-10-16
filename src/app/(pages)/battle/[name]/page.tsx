@@ -23,6 +23,7 @@ import{
 } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import typeRelations from '@/../public/type-relations.json'; 
+import { useAccount } from 'wagmi';
 
 interface BattleState {
   playerMon: BattleMonType | null;
@@ -49,14 +50,16 @@ export default function Home() {
     isLoading: true
   });
   const [isProcessingTurn, setIsProcessingTurn] = useState(false);
+  const { address } = useAccount();
   const param = useParams();
   const router = useRouter();
 
   useEffect(() => {
+    if(!address) return;
     const loadBattleData = async () => {
       setBattleState(prev => ({ ...prev, isLoading: true }));
       
-      const mons = loadMonstersFromStorage();
+      const mons = loadMonstersFromStorage(address);
       const playerMonRaw = mons.find(m => m.name === param.name);
       
       if (!playerMonRaw) {
@@ -102,7 +105,7 @@ export default function Home() {
     if (!battleState.isOver) {
       loadBattleData();
     }
-  }, [battleState.isOver, param.name, router]);
+  }, [battleState.isOver, param.name, router, address]);
 
   function calculateDamage(move: Move, attacker: BattleMonType, defender: BattleMonType): number {
     // gen v damage calcaulation formula di included iv ev at set na yung level 50 for simplicity

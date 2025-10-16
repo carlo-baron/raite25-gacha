@@ -55,7 +55,10 @@ import {
   useAccount,
   useReadContract,
 } from 'wagmi';
-import { decodeEventLog } from 'viem';
+import { 
+  decodeEventLog,
+  TransactionReceipt,
+} from 'viem';
 import { baseSepolia } from 'wagmi/chains';
 import GachaTokenAbi from '@/abi/GachaToken.json';
 import GachaSystemAbi from '@/abi/GachaSystem.json';
@@ -91,7 +94,7 @@ export default function Gacha({
     abi: GachaTokenAbi,
     functionName: 'allowance',
     args: [address, GACHA_SYSTEM_ADDRESS],
-  });
+  }) as {data: bigint | undefined };
 
   const { writeContract, data: txHash, error: writeError, reset: resetWrite } = useWriteContract();
   const { isLoading: isTxLoading, isSuccess: isTxSuccess, error: txError, data: receipt } = useWaitForTransactionReceipt({ hash: txHash });
@@ -127,24 +130,27 @@ export default function Gacha({
     }
   }, [txError, pullCost, refundTokens]);
 
-function getTokenId(receipt){
-  try {
-    for (const log of receipt.logs || []) {
-      try {
-        const parsed = decodeEventLog({
-          abi: GachaSystemAbi,
-          data: log.data,
-          topics: log.topics
-        });
-        if (parsed.eventName === 'Bought') {
-          const tokenId = Number(parsed.args.tokenId);
-          return tokenId;
-        }
-      } catch {}
-    }
-    return null;
-  } catch {}
-}
+  function getTokenId(receipt: TransactionReceipt){
+    try {
+      for (const log of receipt.logs || []) {
+        try {
+          const parsed = decodeEventLog({
+            abi: GachaSystemAbi,
+            data: log.data,
+            topics: log.topics
+          }) as {
+            eventName: string;
+            args?: {tokenId?: bigint};
+          };
+          if (parsed.eventName === 'Bought' && parsed.args?.tokenId !== undefined) {
+            const tokenId = Number(parsed.args.tokenId);
+            return tokenId;
+          }
+        } catch {}
+      }
+      return null;
+    } catch {}
+  }
 
   useEffect(() => {
     if(!isTxSuccess || !receipt || !pulledMon) return;
