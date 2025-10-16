@@ -61,6 +61,16 @@ export default function Home() {
   });
 
   useEffect(()=>{
+    if(!isConnected){
+      setWallet({
+        balance: 0,
+        history: []
+      });
+      setMonsters([]);
+    }
+  },[isConnected]);
+
+  useEffect(()=>{
     if(!address || !isConnected || !balance){
       return;
     }
