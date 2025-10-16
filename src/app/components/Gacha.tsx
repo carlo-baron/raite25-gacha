@@ -54,8 +54,8 @@ import {
   useWaitForTransactionReceipt,
   useAccount,
   useReadContract,
-  useWatchContractEvent,
 } from 'wagmi';
+import { decodeEventLog } from 'viem';
 import { baseSepolia } from 'wagmi/chains';
 import GachaTokenAbi from '@/abi/GachaToken.json';
 import GachaSystemAbi from '@/abi/GachaSystem.json';
@@ -85,7 +85,6 @@ export default function Gacha({
   const [message, setMessage] = useState<string>('');
   const [revealMon, setRevealMon] = useState<boolean>(false);
   const { address } = useAccount();
-  const { mintedToken } = useMintListener();
   
   const { data: currentAllowance } = useReadContract({
     address: GACHA_TOKEN_ADDRESS,
@@ -95,7 +94,7 @@ export default function Gacha({
   });
 
   const { writeContract, data: txHash, error: writeError, reset: resetWrite } = useWriteContract();
-  const { isLoading: isTxLoading, isSuccess: isTxSuccess, error: txError } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: isTxLoading, isSuccess: isTxSuccess, error: txError, data: receipt } = useWaitForTransactionReceipt({ hash: txHash });
 
   const rarityToNumber = (rarity: string): number => {
     const rarityMap: Record<string, number> = {
@@ -107,6 +106,7 @@ export default function Gacha({
     };
     return rarityMap[rarity] || 1;
   };
+
 
   useEffect(() => {
     if (writeError) {
@@ -127,20 +127,49 @@ export default function Gacha({
     }
   }, [txError, pullCost, refundTokens]);
 
-  useEffect(() => {
-    if (isTxSuccess && pulledMon) {
-      setRevealMon(true);
-      if(mintedToken){
-        pulledMon.tokenId = mintedToken;
-      }
-      onPull(pulledMon);
-      setIsPulling(false);
-      setMessage(`Successfully pulled ${pulledMon.name.toUpperCase()}! NFT minted!`);
+function getTokenId(receipt){
+  try {
+    for (const log of receipt.logs || []) {
+      try {
+        const parsed = decodeEventLog({
+          abi: GachaSystemAbi,
+          data: log.data,
+          topics: log.topics
+        });
+        if (parsed.eventName === 'Bought') {
+          const tokenId = Number(parsed.args.tokenId);
+          return tokenId;
+        }
+      } catch {}
     }
+    return null;
+  } catch {}
+}
+
+  useEffect(() => {
+    if(!isTxSuccess || !receipt || !pulledMon) return;
+
+    const tokenId = getTokenId(receipt);
+    if(tokenId !== null){
+      const updatedMon = {...pulledMon, tokenId};
+      setPulledMon(updatedMon);
+      onPull(updatedMon);
+      setMessage(`Successfully pulled ${updatedMon.name.toUpperCase()}! NFT minted!`);
+      setRevealMon(true);
+    }else{
+      setPulledMon(null);
+      setMessage("Pull failed — refunding tokens.");
+      refundTokens(pullCost, "Refund failed pull");
+    }
+    setIsPulling(false);
+
+  }, [isTxSuccess, receipt]);
+
+  useEffect(()=>{
     if(isTxLoading){
       setMessage("Minting NFT...");
     }
-  }, [isTxSuccess, pulledMon, isTxLoading]);
+  }, [isTxLoading]);
 
   async function pull() {
     if(isPulling || !address) return;
@@ -312,26 +341,3 @@ export function BadgeSelector({selected = null}: {selected?: string | null;}) {
     </Box>
   );
 }
-
-function useMintListener() {
-  const [mintedToken, setMintedToken] = useState<number>(0);
-
-  useWatchContractEvent({
-    address: GACHA_SYSTEM_ADDRESS,
-    abi: GachaSystemAbi,
-    eventName: "Bought",
-    pollingInterval: 4000,
-    onLogs(logs) {
-      logs.forEach((log) => {
-        const { buyer, tokenId } = log.args;
-        setMintedToken(Number(tokenId));
-      });
-    },
-    onError(err){
-      console.log(err);
-    }
-  });
-
-  return { mintedToken };
-}
-

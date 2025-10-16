@@ -98,6 +98,7 @@ export default function Home() {
   }, [wallet]);
 
   function addMonster(monster: PokemonType) {
+      console.log('onPull');
       setMonsters(prev => [monster, ...prev]);
   }
 

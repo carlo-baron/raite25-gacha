@@ -210,7 +210,10 @@ export function loadMonstersFromStorage(user: Address): PokemonType[]{
     const itemKey = `${user}-${STORAGE_KEY_MONSTERS}`
     const raw = localStorage.getItem(itemKey);
     if (!raw) return [];
-    return JSON.parse(raw);
+    const parsedData: PokemonType[] = JSON.parse(raw);
+    const filtered = parsedData.filter(item => item.tokenId != null);
+    
+    return filtered;
   } catch (err) {
     console.error("loadMonstersFromStorage", err);
     return [];
