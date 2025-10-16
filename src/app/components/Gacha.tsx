@@ -114,6 +114,7 @@ export default function Gacha({
   useEffect(() => {
     if (writeError) {
       const details = JSON.stringify(writeError);
+      console.log(details);
       alert(details);
       setMessage("Transaction cancelled");
       setIsPulling(false);
