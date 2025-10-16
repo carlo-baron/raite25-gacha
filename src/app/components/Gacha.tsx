@@ -113,9 +113,8 @@ export default function Gacha({
 
   useEffect(() => {
     if (writeError) {
-      const details = JSON.stringify(writeError);
-      console.log("MOBILE:",details);
-      alert(details);
+      console.log("MOBILE:",writeError);
+      alert(writeError);
       setMessage("Transaction cancelled");
       setIsPulling(false);
       refundTokens(pullCost, "Refund cancelled transaction");
