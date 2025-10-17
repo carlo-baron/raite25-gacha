@@ -173,7 +173,7 @@ export default function Home() {
           variant='h6'
           fontWeight={800}
           >
-            GachaCare
+            CryptoMon
           </Typography>
           <Wallet>
             <ConnectWallet/>

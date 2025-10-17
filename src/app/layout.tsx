@@ -15,7 +15,7 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: "GachaCare",
+        title: "CryptoMon",
         description: "Pull NFTs, Raise, Battle, Earn",
         other: {
         'fc:miniapp': JSON.stringify({
