@@ -130,9 +130,127 @@ export interface RawPokemonResponse {
 }
 
 // --- Fetch Function ---
+export interface Move {
+  name: string;
+  class: string;
+  pp: number;
+  power: number;
+  type: string;
+}
 
-export async function fetchPokemonData(nameOrId: string | number) {
-  const name = String(nameOrId).toLowerCase();
+interface RawMove{
+  move: {
+    name: string;
+    url: string;
+  }
+}
+
+export const maxBaseStats: Record<string, number> = {
+  hp: 255,
+  attack: 190,
+  defense: 230,
+  "special-attack": 194,
+  "special-defense": 230,
+  speed: 200
+}as const;
+
+export interface PokemonType {
+  uid: string;
+  acquiredAt: number;
+  name: string;
+  speciesId: number;
+  sprite: string;
+  animations: {
+    front: string;
+    back: string;
+  }
+  moves: Move[];
+  types: string[];
+  cry: string;
+  stats: Record<string, number>;
+  rarity: Rarity;
+  cryptoWorth: number;
+  history: { ts: number; event: string; deltaWorth: number }[];
+  tokenId?: number;
+  traderName?: string;
+}
+
+export async function getDamageMoves(mon: string | number): Promise<Move[]> {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${mon}`);
+  if (!res.ok) throw new Error(`Failed to fetch Pokémon: ${mon}`);
+
+
+  const data = await res.json();
+
+  const movePromises = data.moves.map(async (item: RawMove) => {
+    const moveRes = await fetch(item.move.url);
+    if (!moveRes.ok) return null;
+
+    const moveData = await moveRes.json();
+
+    if (moveData.damage_class.name !== 'status' && moveData.power > 0) {
+      return {
+        name: item.move.name,
+        class: moveData.damage_class.name,
+        pp: moveData.pp,
+        power: moveData.power,
+        type: moveData.type.name,
+      } as Move;
+    }
+
+    return null;
+  });
+
+  const allMoves = await Promise.all(movePromises);
+  const damageMoves = allMoves.filter((move): move is Move => move !== null);
+
+  if (damageMoves.length === 0) return [];
+
+  const monMove: Move[] = [];
+  const maxMoves = Math.min(4, damageMoves.length);
+  while (monMove.length < maxMoves) {
+    const randomMove = damageMoves[Math.floor(Math.random() * damageMoves.length)];
+    if (!monMove.includes(randomMove)) {
+      monMove.push(randomMove);
+    }
+  }
+
+  return monMove;
+}
+
+function getRarityMultiplier(rarity: Rarity) {
+  switch (rarity) {
+    case "EX": return 10;
+    case "Ultra-Rare": return 5;
+    case "Rare": return 2.5;
+    case "Uncommon": return 1.5;
+    default: return 1;
+  }
+}
+
+const cumulative = (function buildCumulative() {
+  const total = TIERS.reduce((s, t) => s + t.weight, 0);
+  let sum = 0;
+  return TIERS.map((t) => {
+    sum += t.weight / total;
+    return { ...t, cum: Math.min(1, sum) };
+  });
+})();
+
+function weightedPickTier(rand = Math.random()) {
+  for (const t of cumulative) {
+    if (rand <= t.cum) return t;
+  }
+  return cumulative[cumulative.length - 1];
+}
+
+export async function fetchPokemonData(nameOrId?: string): Promise<PokemonType> {
+  const random = Math.random();
+  const tier = weightedPickTier(random);
+  const list = tier.pokemon;
+  const pick = list[Math.floor(Math.random() * list.length)];
+
+  const name = nameOrId ?? String(pick).toLowerCase();
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
 
   if (!res.ok) throw new Error("Pokemon not found");
@@ -140,26 +258,44 @@ export async function fetchPokemonData(nameOrId: string | number) {
   const data: RawPokemonResponse = await res.json();
 
   const stats = Object.fromEntries(
-    data.stats.map((s,i) => {
-      if(i === 0) return [s.stat.name, s.base_stat + 60];
+    data.stats.map((s) => {
+      if(s.stat.name === 'hp') return [s.stat.name, s.base_stat + 60];
       return[s.stat.name, s.base_stat + 5]
     })
   );
 
+  const moves = await getDamageMoves(name);
   const types = data.types.map(t => t.type.name);
 
+  const sumStats = (Object.values(stats) as number[]).reduce((a, b) => a + b, 0);
+  const multiplier = getRarityMultiplier(tier.name);
+  const cryptoWorth = Math.max(1, Math.round((sumStats / 10) * multiplier));
+  
   return {
-    id: data.id,
+    uid: Date.now() + "-" + Math.floor(Math.random() * 10000),
+    speciesId: data.id,
+    acquiredAt: Date.now(),
     name: data.name,
     sprite:
       data.sprites.other?.["official-artwork"]?.front_default ??
       data.sprites.front_default,
+    animations: {
+      front: data.sprites.versions['generation-v']['black-white'].animated.front_default 
+        || data.sprites.front_default,
+      back: data.sprites.versions['generation-v']['black-white'].animated.back_default 
+        || data.sprites.back_default,
+    },
+    moves,
+    rarity: tier.name,
     stats,
     types,
     cry: data.cries.latest,
+    cryptoWorth,
+    history: [
+      { ts: Date.now(), event: `Pulled (${tier.name})`, deltaWorth: cryptoWorth }
+    ],
   };
 }
-
 // --- Game Logic Types ---
 
 export const PULL_COST = 55 as const;
@@ -173,30 +309,6 @@ export const rarityBadges = [
   {text: 'EX', color: '#ef4444'},
 ] as const;
 
-export interface PokemonType {
-  uid: string;
-  acquiredAt: number;
-  name: string;
-  speciesId: number;
-  sprite: string;
-  types: string[];
-  cry: string;
-  baseStats: Record<string, number>;
-  stats: Record<string, number>;
-  rarity: Rarity;
-  cryptoWorth: number;
-  history: { ts: number; event: string; deltaWorth: number }[];
-  tokenId?: number;
-}
-
-export const maxBaseStats: Record<string, number> = {
-  hp: 255,
-  attack: 190,
-  defense: 230,
-  "special-attack": 194,
-  "special-defense": 230,
-  speed: 200
-}as const;
 
 //localstorage n shih
 
@@ -267,104 +379,3 @@ export function saveWalletToStorage(user: Address, wallet: WalletType) {
 }
 
 // --- PVP ---
-export interface Move {
-  name: string;
-  class: string;
-  pp: number;
-  power: number;
-  type: string;
-}
-
-export interface BattleMonType {
-  name: string;
-  cry: string;
-  types: string[];
-  moves: Move[];
-  sprites: {
-    front: string;
-    back: string;
-  };
-  rarity?: Rarity
-  stats: Record<string, number>;
-}
-
-interface RawMove{
-  move: {
-    name: string;
-    url: string;
-  }
-}
-
-export async function getDamageMoves(mon: string | number): Promise<Move[]> {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${mon}`);
-  if (!res.ok) throw new Error(`Failed to fetch Pokémon: ${mon}`);
-
-  const data = await res.json();
-
-  const movePromises = data.moves.map(async (item: RawMove) => {
-    const moveRes = await fetch(item.move.url);
-    if (!moveRes.ok) return null;
-
-    const moveData = await moveRes.json();
-
-    if (moveData.damage_class.name !== 'status' && moveData.power > 0) {
-      return {
-        name: item.move.name,
-        class: moveData.damage_class.name,
-        pp: moveData.pp,
-        power: moveData.power,
-        type: moveData.type.name,
-      } as Move;
-    }
-
-    return null;
-  });
-
-  const allMoves = await Promise.all(movePromises);
-  const damageMoves = allMoves.filter((move): move is Move => move !== null);
-
-  if (damageMoves.length === 0) return [];
-
-  const monMove: Move[] = [];
-  while (monMove.length < 4) {
-    const randomMove = damageMoves[Math.floor(Math.random() * damageMoves.length)];
-    if (!monMove.includes(randomMove)) {
-      monMove.push(randomMove);
-    }
-  }
-
-  return monMove;
-}
-
-export async function fetchBattleMon(name: string): Promise<BattleMonType | undefined> {
-  try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-    if (!res.ok) throw new Error(`Failed to fetch Pokémon: ${name}`);
-    const data: RawPokemonResponse = await res.json();
-
-    const moves = await getDamageMoves(name);
-    const types = data.types.map(t => t.type.name);
-
-    return {
-      name: data.name,
-      cry: data.cries.latest,
-      types,
-      moves,
-      sprites: {
-        front: data.sprites.versions['generation-v']['black-white'].animated.front_default 
-          || data.sprites.front_default,
-        back: data.sprites.versions['generation-v']['black-white'].animated.back_default 
-          || data.sprites.back_default,
-      },
-      stats: data.stats.reduce((acc: Record<string, number>, stat: PokemonStat, index: number) => {
-        const base = stat.base_stat;
-        acc[stat.stat.name] = index === 0 ? base + 60 : base + 5;
-        return acc;
-      }, {}),
-    };
-  } catch (err) {
-    console.error("Error while fetching Pokémon:", err);
-    return undefined;
-  }
-}
-

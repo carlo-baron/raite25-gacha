@@ -83,10 +83,6 @@ interface MonsterModalProps{
   creditTokens: (amt: number, note: string) => void;
 }
 
-type TradeMon = PokemonType & {
-  __traderName: string
-}
-
 export default function MonsterModal({
   open,
   onClose,
@@ -98,7 +94,7 @@ export default function MonsterModal({
   creditTokens
 }: MonsterModalProps){
   const [local, setLocal] = useState<PokemonType>({...monster});
-  const [offered, setOffered] = useState<TradeMon | null>(null);
+  const [offered, setOffered] = useState<PokemonType | null>(null);
   const [sell, setSell] = useState<boolean>(false);
 
   function handleMiniGameResult(result: ShuffleResult | TossResult) {
@@ -129,36 +125,16 @@ export default function MonsterModal({
 
     try {
       const poke = await fetchPokemonData(pick);
-      const sumStats = Object.values(poke.stats).reduce((a,b) => a + b, 0);
-      let multiplier = 1;
-      switch (local.rarity) {
-        case "EX": multiplier = 10; break;
-        case "Ultra-Rare": multiplier = 5; break;
-        case "Rare": multiplier = 2.5; break;
-        case "Uncommon": multiplier = 1.5; break;
-        default: multiplier = 1; break;
-      }
-      const cryptoWorth = Math.max(1, Math.round((sumStats / 10) * multiplier));
 
       const phon = NATO[Math.floor(Math.random() * NATO.length)];
       const idnum = Math.floor(Math.random() * 9000) + 100;
       const traderName = `${phon}-${idnum}`;
 
-      const offered: TradeMon = {
-        uid: `offer-${Date.now()}-${Math.floor(Math.random()*10000)}`,
-        acquiredAt: Date.now(),
-        name: poke.name,
-        speciesId: poke.id,
-        sprite: poke.sprite,
-        types: poke.types,
-        baseStats: poke.stats,
-        stats: { ...poke.stats },
-        cry: poke.cry,
-        rarity: local.rarity,
-        cryptoWorth,
-        history: [{ ts: Date.now(), event: `Offered by ${traderName}`, deltaWorth: 0 }],
-        __traderName: traderName,
+      const offered = {
+        ...poke,
+        traderName
       };
+
       setOffered(offered);
     } catch (err) {
       console.error("Failed to generate trade offer", err);
@@ -273,7 +249,7 @@ export default function MonsterModal({
               variant='caption'
               color='textSecondary'
               >
-                From: {offered.__traderName}
+                From: {offered.traderName}
               </Typography>
             </DialogTitle>
             <DialogContent
@@ -562,7 +538,7 @@ function MonsterInfoCard({
       <Button
       variant='contained'
       className='col-span-2'
-      onClick={() => router.push(`/battle/${monster.name}`)}
+      onClick={() => router.push(`/battle/${monster.uid}`)}
       >
         Battle
       </Button>

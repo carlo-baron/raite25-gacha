@@ -4,11 +4,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import {
-  fetchBattleMon,
-  BattleMonType,
   Move,
   loadMonstersFromStorage,
   TIERS,
+  PokemonType,
+  fetchPokemonData
 } from '@/utils';
 import{
   Paper,
@@ -26,14 +26,14 @@ import typeRelations from '@/../public/type-relations.json';
 import { useAccount } from 'wagmi';
 
 interface BattleState {
-  playerMon: BattleMonType | null;
-  enemyMon: BattleMonType | null;
+  playerMon: PokemonType | null;
+  enemyMon: PokemonType | null;
   playerHP: number;
   enemyHP: number;
   maxPlayerHP: number;
   maxEnemyHP: number;
   isOver: boolean;
-  winner: BattleMonType | null;
+  winner: PokemonType | null;
   isLoading: boolean;
 }
 
@@ -60,26 +60,21 @@ export default function Home() {
       setBattleState(prev => ({ ...prev, isLoading: true }));
       
       const mons = loadMonstersFromStorage(address);
-      const playerMonRaw = mons.find(m => m.name === param.name);
+      const player = mons.find(m => m.uid === param.uid);
       
-      if (!playerMonRaw) {
+      if (!player) {
         router.push('/');
         return;
       }
 
       try {
-        const player = await fetchBattleMon(param.name as string);
-        if(!player) return;
-        player.stats = playerMonRaw.stats;
-        player.rarity = playerMonRaw.rarity;
-
         const enemyPool = TIERS.find(tier => tier.name === player.rarity);
         if (!enemyPool || !enemyPool.pokemon.length) {
           throw new Error('No enemy pool available');
         }
 
         const randomEnemy = enemyPool.pokemon[Math.floor(Math.random() * enemyPool.pokemon.length)];
-        const enemy = await fetchBattleMon(randomEnemy);
+        const enemy = await fetchPokemonData(randomEnemy);
 
         if (!player || !enemy) {
           throw new Error('Failed to load battle monsters');
@@ -105,9 +100,9 @@ export default function Home() {
     if (!battleState.isOver) {
       loadBattleData();
     }
-  }, [battleState.isOver, param.name, router, address]);
+  }, [battleState.isOver, param.uid, router, address]);
 
-  function calculateDamage(move: Move, attacker: BattleMonType, defender: BattleMonType): number {
+  function calculateDamage(move: Move, attacker: PokemonType, defender: PokemonType): number {
     // gen v damage calcaulation formula di included iv ev at set na yung level 50 for simplicity
     const crit = Math.random() < 0.0625 ? 1.5 : 1;
     const power = move.power;
@@ -129,7 +124,7 @@ export default function Home() {
     return Math.floor(damage);
   }
 
-  function getRandomEnemyMove(enemyMon: BattleMonType): Move {
+  function getRandomEnemyMove(enemyMon: PokemonType): Move {
     return enemyMon.moves[Math.floor(Math.random() * enemyMon.moves.length)];
   }
 
@@ -141,7 +136,7 @@ export default function Home() {
     setBattleState(prev => {
       let newPlayerHP = prev.playerHP;
       let newEnemyHP = prev.enemyHP;
-      let winner: BattleMonType | null = null;
+      let winner: PokemonType | null = null;
       let isOver = false;
 
       if (playerFirst) {
@@ -297,7 +292,7 @@ export default function Home() {
               <Box className='justify-center items-center flex col-span-1'>
                 <img 
                   className='w-[60%] h-fit object-cover'
-                  src={battleState.enemyMon.sprites.front}
+                  src={battleState.enemyMon.animations.front}
                   alt={battleState.enemyMon.name}
                   style={{imageRendering: 'pixelated'}}
                 />
@@ -311,7 +306,7 @@ export default function Home() {
               <Box className='justify-center items-center flex col-span-1'>
                 <img 
                   className='w-[60%] h-fit object-cover'
-                  src={battleState.playerMon.sprites.back}
+                  src={battleState.playerMon.animations.back}
                   alt={battleState.playerMon.name}
                   style={{imageRendering: 'pixelated'}}
                 />
